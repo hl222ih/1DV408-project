@@ -1,6 +1,6 @@
 <?php
 
-namespace pdo;
+namespace BoostMyAllowanceApp\PDO;
 
 
 class PDO {

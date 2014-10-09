@@ -1,7 +1,8 @@
 <?php
 
-namespace controller;
+namespace BoostMyAllowanceApp\Controller;
 
+use BoostMyAllowanceApp\Model\Model;
 
 class AuthController {
 

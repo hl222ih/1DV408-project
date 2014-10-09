@@ -1,6 +1,6 @@
 <?php
 
-namespace model;
+namespace BoostMyAllowanceApp\Model;
 
 
 class Transaction {

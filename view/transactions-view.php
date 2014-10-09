@@ -1,8 +1,21 @@
 <?php
 
-namespace view;
+namespace BoostMyAllowanceApp\View;
+
+use BoostMyAllowanceApp\Model\Model;
+
+class TransactionsView extends View {
 
 
-class TransactionsView {
+    public function __construct(Model $model, $title) {
+        parent::__construct($model, $title);
+    }
 
+    function getHtml() {
+        $html = $this->getFirstPartOfHtml();
+        $html .= "<p>Content missing...</p>";
+        $html .= $this->getSecondPartOfHtml();
+
+        return $html;
+    }
 } 
