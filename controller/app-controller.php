@@ -17,4 +17,6 @@ require_once("view/transactions-view.php");
 
 class AppController {
 
-} 
+    public function __construct() {
+    }
+}

@@ -12,10 +12,8 @@ class TransactionsView extends View {
     }
 
     function getHtml() {
-        $html = $this->getFirstPartOfHtml();
-        $html .= "<p>Content missing...</p>";
-        $html .= $this->getSecondPartOfHtml();
+        $html = "<p>Content missing...</p>";
 
-        return $html;
+        return parent::getSurroundingHtml($html);
     }
 } 

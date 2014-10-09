@@ -14,9 +14,15 @@ abstract class View {
         $this->title = $title;
     }
 
-    abstract function getHtml();
+    protected function getSurroundingHtml($bodyHtml) {
+        $html = $this->getFirstPartOfHtml();
+        $html .= $bodyHtml;
+        $html .= $this->getSecondPartOfHtml();
 
-    protected function getFirstPartOfHtml() {
+        return $html;
+    }
+
+    private function getFirstPartOfHtml() {
         $head = new Head($this->title);
         $navigation = new Navigation($this->model, get_class($this));
 
@@ -28,7 +34,7 @@ abstract class View {
         return $html;
     }
 
-    protected function getSecondPartOfHtml() {
+    private function getSecondPartOfHtml() {
         $footer = new Footer();
 
         $html = $footer->getHtml();
