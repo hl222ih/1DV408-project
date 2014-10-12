@@ -3,6 +3,13 @@
 namespace BoostMyAllowanceApp\Model;
 
 
-class Task {
+class Task extends Event {
 
+    private $validFrom;
+    private $validTo;
+
+    private $rewardValue;
+    private $penaltyValue;
+
+    private $title;
 } 

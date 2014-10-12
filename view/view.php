@@ -4,14 +4,18 @@ namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\Model;
 
+require_once("partials/head.php");
+require_once("partials/footer.php");
+require_once("partials/navigation.php");
+
 abstract class View {
 
     private $title;
     protected $model;
 
-    protected function __construct(Model $model, $title) {
+    public function __construct(Model $model, $viewTitle = "") {
         $this->model = $model;
-        $this->title = $title;
+        $this->title = $model::APP_NAME . " " . $viewTitle;
     }
 
     protected function getSurroundingHtml($bodyHtml) {
@@ -41,5 +45,44 @@ abstract class View {
         $html .= '</body>' . PHP_EOL;
 
         return $html;
+    }
+
+    public function unsetCookies() {
+        unset($_COOKIE[self::$cookieEncryptedPasswordKey]);
+        setcookie(self::$cookieEncryptedPasswordKey, null, -1, '/');
+        unset($_COOKIE[self::$cookieUsernameKey]);
+        setcookie(self::$cookieUsernameKey, null, -1, '/');
+    }
+
+    public function getUsernameFromCookie() {
+        return (isset($_COOKIE[self::$cookieUsernameKey]) ? $_COOKIE[self::$cookieUsernameKey] : "");
+    }
+
+    public function getEncryptedPasswordFromCookie() {
+        return (isset($_COOKIE[self::$cookieEncryptedPasswordKey]) ? $_COOKIE[self::$cookieEncryptedPasswordKey] : "");
+    }
+
+    public function setEncryptedPasswordCookie($encryptedCookiePassword) {
+        $_COOKIE[self::$cookieEncryptedPasswordKey] = $encryptCookiePassword($password);
+    }
+    public function setCookiesIfAutoLogin() {
+        if ($this->autoLogin) {
+            $encryptedCookiePassword = $this->model->encryptCookiePassword($_POST[$this->postPasswordKey]);
+            setcookie($this->cookieUsernameKey, $_POST[$this->postUsernameKey], time()+2592000, '/'); //expire in 30 days
+            setcookie($this->cookieEncryptedPasswordKey, $encryptedCookiePassword, time()+2592000, '/');
+        }
+    }
+    public function wasLoginButtonClicked() {
+        return isset($_POST[self::$postLoginButtonNameKey]);
+    }
+
+    public function getUsername() {
+        return $this->username;
+    }
+    public function getPassword() {
+        return $this->password;
+    }
+    public function wasAutoLoginChecked() {
+        return $this->autoLogin;
     }
 }

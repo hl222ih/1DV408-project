@@ -3,6 +3,6 @@
 namespace BoostMyAllowanceApp\Model;
 
 
-class Transaction {
-
-} 
+class Transaction extends Event {
+    private $transactionValue;
+}

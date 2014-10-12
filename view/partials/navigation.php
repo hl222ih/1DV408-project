@@ -10,7 +10,7 @@ class Navigation {
     private $viewClassName;
 
     public function __construct(Model $model, $viewClassName) {
-        $this->showAdminItems = $model->getUser()->isAdmin();
+        //$this->showAdminItems = $model->getUser()->isAdmin();
     }
 
     public function getHtml() {

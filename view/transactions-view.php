@@ -7,8 +7,8 @@ use BoostMyAllowanceApp\Model\Model;
 class TransactionsView extends View {
 
 
-    public function __construct(Model $model, $title) {
-        parent::__construct($model, $title);
+    public function __construct(Model $model) {
+        parent::__construct($model, "Transactions");
     }
 
     function getHtml() {
