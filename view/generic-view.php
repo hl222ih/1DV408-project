@@ -11,6 +11,7 @@ class GenericView {
     static private $postPasswordKey = "View::Password";
     static private $postAutoLoginCheckedKey = "View::AutoLoginChecked";
     static private $postLoginButtonNameKey = "View::LoginButtonNameKey";
+    static private $getPageKey = "page";
 
     private $model;
 
@@ -61,4 +62,12 @@ class GenericView {
         return $this->autoLogin;
     }
 
+    public function getRequestedPage() {
+        return isset($_GET[self::$getPageKey]) ? $_GET[self::$getPageKey] : "";
+    }
+
+    public function redirectPage($page = "") {
+        header('location: ' . $_SERVER['PHP_SELF'] . ($page ? "?". self::$getPageKey . "=" . $page : ""));
+        die;
+    }
 } 

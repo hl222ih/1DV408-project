@@ -28,6 +28,7 @@ class Model {
     private static $sessionMappedUsers = "Model::MappedUsers";
     private static $sessionUnits = "Model::Units";
     private static $sessionUser = "Model::User";
+    private static $sessionRequestedPage = "Model::RequestedPage";
 
     private $user;
 
@@ -170,13 +171,6 @@ class Model {
         return isset($_SESSION[self::$sessionAutoLoginCheckedKey]) ? $_SESSION[self::$sessionAutoLoginCheckedKey] : false;
     }
 
-    //public function authUser() {
-    //    return new /Exception("not implemented");
-    //}
-
-    //public function getUser() {
-    //    return $this->user;
-    //}
     private function setUser(User $user) {
         $_SESSION[self::$sessionUser] = serialize($user);
     }
@@ -188,5 +182,13 @@ class Model {
     public function isAdmin() {
         var_dump(unserialize($_SESSION[self::$sessionUser]));
         return $this->getUser()->isAdmin();
+    }
+
+    public function setRequestedPage($page) {
+        $_SESSION[self::$sessionRequestedPage] = $page;
+    }
+
+    public function getRequestedPage() {
+        return isset($_SESSION[self::$sessionRequestedPage]) ? $_SESSION[self::$sessionRequestedPage] : "";
     }
 }

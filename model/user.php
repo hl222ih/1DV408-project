@@ -11,11 +11,11 @@ class User {
 
     private $name;
     private $username;
-    private $secretToken;
-    private $saltedPassword;
-    private $salt;
-    private $cookiePassword;
-    private $cookieExpiration;
+    //private $secretToken;
+    //private $saltedPassword;
+    //private $salt;
+    //private $cookiePassword;
+    //private $cookieExpiration;
     private $mappedUserId;
 
     public function __construct($username) {
