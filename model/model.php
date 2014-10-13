@@ -2,9 +2,9 @@
 
 namespace BoostMyAllowanceApp\Model;
 
-use BoostMyAllowanceApp\PDO\PDO;
+use BoostMyAllowanceApp\Dal\Dal;
 
-require_once("pdo/pdo.php");
+require_once("dal/dal.php");
 require_once("admin-user-entity.php");
 require_once("event.php");
 require_once("log-item.php");
@@ -41,10 +41,10 @@ class Model {
         }
 
 
-        $this->pdo = new PDO();
-        //$this->user = $this->pdo->getUser($this->getUserName());
-        //$this->otherUsers = $this->pdo->getOtherUsers($this->user->getUserId());
-        //$this->tasks = $this->pdo->getTasks($this->user->getUserId, $this->otherUsers->getUserdId()); //en viss eller alla?
+        $this->pdo = new Dal();
+        //$this->user = $this->dal->getUser($this->getUserName());
+        //$this->otherUsers = $this->dal->getOtherUsers($this->user->getUserId());
+        //$this->tasks = $this->dal->getTasks($this->user->getUserId, $this->otherUsers->getUserdId()); //en viss eller alla?
 
         //$this->adminUserEntities
     }

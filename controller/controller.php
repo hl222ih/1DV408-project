@@ -2,18 +2,18 @@
 
 namespace BoostMyAllowanceApp\Controller;
 
-require_once("/model/model.php");
+require_once("model/model.php");
 
-require_once("/view/generic-view.php");
+require_once("view/generic-view.php");
 
-require_once("/view/view.php");
-require_once("/view/events-view.php");
-require_once("/view/log-view.php");
-require_once("/view/login-view.php");
-require_once("/view/register-view.php");
-require_once("/view/settings-view.php");
-require_once("/view/tasks-view.php");
-require_once("/view/transactions-view.php");
+require_once("view/view.php");
+require_once("view/events-view.php");
+require_once("view/log-view.php");
+require_once("view/login-view.php");
+require_once("view/register-view.php");
+require_once("view/settings-view.php");
+require_once("view/tasks-view.php");
+require_once("view/transactions-view.php");
 
 use BoostMyAllowanceApp\Model\Model;
 use BoostMyAllowanceApp\View\GenericView;
@@ -31,6 +31,7 @@ class Controller {
     private $model;
     private $genericView;
     private $view;
+
     static private $logViewName = "log";
     static private $loginViewName = "login";
     static private $settingsViewName = "settings";
