@@ -4,7 +4,7 @@ namespace BoostMyAllowanceApp\Model;
 
 use BoostMyAllowanceApp\Dal\Dal;
 
-require_once("dal/dal.php");
+require_once("../dal_/dal.php");
 require_once("admin-user-entity.php");
 require_once("event.php");
 require_once("log-item.php");
