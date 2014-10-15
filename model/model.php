@@ -4,7 +4,7 @@ namespace BoostMyAllowanceApp\Model;
 
 use BoostMyAllowanceApp\Dal\Dal;
 
-require_once("../dal_/dal.php");
+require_once("dal_/dal.php"); //refuses to commit folder /dal/ but /dal_/ works.
 require_once("admin-user-entity.php");
 require_once("event.php");
 require_once("log-item.php");
@@ -16,7 +16,7 @@ require_once("user.php");
 class Model {
 
     const APP_NAME = "BoostMyAllowance!";
-    private $pdo;
+    private $dal;
 
     private static $sessionIsLoggedInKey = "Model::IsLoggedIn";
     private static $sessionUsernameKey = "Model::Username";
@@ -41,12 +41,15 @@ class Model {
         }
 
 
-        $this->pdo = new Dal();
+        $this->dal = new Dal();
         //$this->user = $this->dal->getUser($this->getUserName());
         //$this->otherUsers = $this->dal->getOtherUsers($this->user->getUserId());
         //$this->tasks = $this->dal->getTasks($this->user->getUserId, $this->otherUsers->getUserdId()); //en viss eller alla?
 
         //$this->adminUserEntities
+
+        //just for testing:
+        $this->setUser(new User($this->dal, "Admin"));
     }
 
     private function doesUserAgentMatch() {
@@ -86,18 +89,15 @@ class Model {
         $salt = $_SERVER['HTTP_USER_AGENT'].$_SERVER['REMOTE_ADDR'];
         return md5($salt.$password);
     }
-//    private function encryptPassword($password, $salt) {
-//        return md5($salt.$password);
-//    }
 
     public function cookieLogin($username, $encryptedCookiePassword) {
         $username = trim($username);
         $_SESSION[self::$sessionLastPostedUsername] = $username;
         $isSuccess = false;
 
-        if ($this->pdo->doesUserExist($username)) {
-            if ($this->pdo->doesCookiePasswordMatch($username, $encryptedCookiePassword)) {
-                if ($this->pdo->isCookieExpirationValid($username)) {
+        if ($this->dal->doesUserExist($username)) {
+            if ($this->dal->doesCookiePasswordMatch($username, $encryptedCookiePassword)) {
+                if ($this->dal->isCookieExpirationValid($username)) {
                     $this->setMessage("Inloggningen lyckades via cookies");
                     $isSuccess = true;
                 } else {
@@ -113,7 +113,7 @@ class Model {
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUsernameKey] = $username;
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
-            $this->setUser(new User($username));
+            $this->setUser(new User($this->dal, $username));
         } else {
             $this->logout();
         }
@@ -129,9 +129,8 @@ class Model {
             if (!$password) {
                 $this->setMessage("Lösenord saknas");
             } else {
-                if ($this->pdo->doesUserExist($username)) {
-                    //TODO: well... change this
-                    if ($this->pdo->doesPasswordMatch($username, $password)) {
+                if ($this->dal->doesUserExist($username)) {
+                    if ($this->dal->doesPasswordMatch($username, $password)) {
                         if ($autoLogin) {
                             $this->setMessage("Inloggning lyckades och vi kommer ihåg dig nästa gång");
                         } else {
@@ -153,7 +152,7 @@ class Model {
             $_SESSION[self::$sessionUsernameKey] = $username;
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
-            $this->setUser(new User($username));
+            $this->setUser(new User($this->dal, $username));
         } else {
             $this->logout();
         }
@@ -180,7 +179,6 @@ class Model {
     }
 
     public function isAdmin() {
-        var_dump(unserialize($_SESSION[self::$sessionUser]));
         return $this->getUser()->isAdmin();
     }
 

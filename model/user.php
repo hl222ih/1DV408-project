@@ -2,6 +2,7 @@
 
 namespace BoostMyAllowanceApp\Model;
 
+use BoostMyAllowanceApp\Dal\Dal;
 
 class User {
 
@@ -11,16 +12,17 @@ class User {
 
     private $name;
     private $username;
-    //private $secretToken;
-    //private $saltedPassword;
-    //private $salt;
-    //private $cookiePassword;
-    //private $cookieExpiration;
-    private $mappedUserId;
+    private $mappedUserIds;
 
-    public function __construct($username) {
-        //TODO: get info from db
-        $this->isAdmin = false; //temp... TODO: check if user is admin
+    public function __construct(Dal $dal, $username) {
+
+        $info = $dal->getUserInfo($username);
+
+        $this->id = $info["id"];
+        $this->isAdmin = $info["isAdmin"];
+        $this->name = $info["name"];
+        $this->username = $username;
+        $this->mappedUserIds = $info["mappedUserIds"];
     }
 
     public function isAdmin() {
