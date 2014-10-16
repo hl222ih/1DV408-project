@@ -167,7 +167,7 @@ class Model {
 
     //}
 
-    public function isAdmin() {
+    public function isUserAdmin() {
         return $this->user->isAdmin();
     }
 

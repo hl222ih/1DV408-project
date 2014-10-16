@@ -78,7 +78,7 @@ class Controller {
                     $this->view = new TasksView($this->model);
                     break;
                 case EventsView::getPageName():
-                    if ($this->model->isAdmin()) {
+                    if ($this->model->isUserAdmin()) {
                         $this->view = new EventsView($this->model);
                     } else {
                         $this->loadOrReloadLoggedInDefault();
@@ -116,7 +116,7 @@ class Controller {
     private function loadOrReloadLoggedInDefault() {
         $requestedPage = $this->genericView->getRequestedPage();
         $this->model->setRequestedPage($requestedPage);
-        if ($this->model->isAdmin()) {
+        if ($this->model->isUserAdmin()) {
             if ($requestedPage == EventsView::getPageName()) {
                 $this->view = new EventsView($this->model);
             } else {
