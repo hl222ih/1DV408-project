@@ -81,10 +81,21 @@ abstract class View extends ViewKeys {
     public function getUsername() {
         return $this->username;
     }
+
     public function getPassword() {
         return $this->password;
     }
+
     public function wasAutoLoginChecked() {
         return $this->autoLogin;
+    }
+
+    public static function getClassName() {
+        return get_called_class();
+    }
+
+    public static function getPageName() {
+        preg_match("/\\\\(\w*)View$/", get_called_class(), $matches);
+        return lcfirst($matches[1]);
     }
 }

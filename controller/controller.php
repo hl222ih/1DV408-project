@@ -33,13 +33,6 @@ class Controller {
     private $genericView;
     private $view;
 
-    static private $logViewName = "log";
-    static private $loginViewName = "login";
-    static private $settingsViewName = "settings";
-    static private $registerViewName = "register";
-    static private $tasksViewName = "tasks";
-    static private $transactionsViewName = "transactions";
-    static private $eventsViewName = "events";
     static private $logoutViewName = "logout"; //not an actual view -> logged out and redirected to login
 
     public function __construct() {
@@ -70,10 +63,10 @@ class Controller {
                 $this->model->logoutUser(); //and clean session
                 $requestedPage = $this->genericView->getRequestedPage();
                 $this->model->setRequestedPage($requestedPage);
-                if ($requestedPage == self::$loginViewName) {
+                if ($requestedPage == LoginView::getPageName()) {
                     $this->view = new LoginView($this->model);
                 } else {
-                    $this->genericView->redirectPage(self::$loginViewName);
+                    $this->genericView->redirectPage(LoginView::getPageName());
                 }
             }
         } else {
@@ -81,35 +74,35 @@ class Controller {
             $this->model->setRequestedPage($requestedPage);
             //TODO: validate if user has the rights to view requested page
             switch ($requestedPage) {
-                case self::$tasksViewName:
+                case TasksView::getPageName():
                     $this->view = new TasksView($this->model);
                     break;
-                case self::$eventsViewName:
+                case EventsView::getPageName():
                     if ($this->model->isAdmin()) {
                         $this->view = new EventsView($this->model);
                     } else {
                         $this->loadOrReloadLoggedInDefault();
                     }
                     break;
-                case self::$loginViewName:
+                case LoginView::getPageName():
                     $this->loadOrReloadLoggedInDefault();
                     break;
-                case self::$logViewName:
+                case LogView::getPageName():
                     $this->view = new LogView($this->model);
                     break;
-                case self::$settingsViewName:
+                case SettingsView::getPageName():
                     $this->view = new SettingsView($this->model);
                     break;
-                case self::$registerViewName:
+                case RegisterView::getPageName():
                     //TODO: log user out first
                     $this->view = new RegisterView($this->model);
                     break;
-                case self::$transactionsViewName:
+                case TransactionsView::getPageName():
                     $this->view = new TransactionsView($this->model);
                     break;
                 case self::$logoutViewName:
                     $this->model->logoutUser();
-                    $this->genericView->redirectPage(self::$loginViewName);
+                    $this->genericView->redirectPage(LoginView::getPageName());
                     break;
                 default:
                 $this->loadOrReloadLoggedInDefault();
@@ -124,16 +117,16 @@ class Controller {
         $requestedPage = $this->genericView->getRequestedPage();
         $this->model->setRequestedPage($requestedPage);
         if ($this->model->isAdmin()) {
-            if ($requestedPage == self::$eventsViewName) {
+            if ($requestedPage == EventsView::getPageName()) {
                 $this->view = new EventsView($this->model);
             } else {
-                $this->genericView->redirectPage(self::$eventsViewName);
+                $this->genericView->redirectPage(EventsView::getPageName());
             }
         } else {
-            if ($requestedPage == self::$tasksViewName) {
+            if ($requestedPage == TasksView::getPageName()) {
                 $this->view = new TasksView($this->model);
             } else {
-                $this->genericView->redirectPage(self::$tasksViewName);
+                $this->genericView->redirectPage(TasksView::getPageName());
             }
         }
     }

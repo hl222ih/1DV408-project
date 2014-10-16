@@ -12,10 +12,7 @@ class Navigation {
 
     public function __construct(Model $model, $viewClassName) {
         $this->model = $model;
-        preg_match("/\\\\(\w*)View$/", $viewClassName, $matches);
-
-        $this->viewClassName = $matches[1];
-        //$this->showAdminItems = $model->getUser()->isAdmin();
+        $this->viewClassName = $viewClassName;
     }
 
     public function getHtml() {
@@ -34,16 +31,16 @@ class Navigation {
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">' .
                 (!$this->model->isUserLoggedIn() ? '
-              <li ' . ('Login' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=login">Logga in</a></li>
+              <li ' . (LoginView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . LoginView::getPageName() . '">Inloggning</a></li>
               ' : '') . '
-              <li ' . ('Register' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=register">Registrera ny användare</a></li>
-              <li ' . ('Events' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=events">Händelser</a></li>
-              <li ' . ('Tasks' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=tasks">Uppgifter</a></li>
-              <li ' . ('Transactions' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=transactions">Transaktioner</a></li>
-              <li ' . ('Log' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=log">Logg</a></li>
-              <li ' . ('Settings' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=settings">Inställningar</a></li>' .
+              <li ' . (RegisterView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . RegisterView::getPageName() . '">Registrering</a></li>
+              <li ' . (EventsView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . EventsView::getPageName() . '">Händelser</a></li>
+              <li ' . (TasksView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . TasksView::getPageName() . '">Uppgifter</a></li>
+              <li ' . (TransactionsView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . TransactionsView::getPageName() . '">Överföringar</a></li>
+              <li ' . (LogView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . LogView::getPageName() . '">Logg</a></li>
+              <li ' . (SettingsView::getClassName() == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=' . SettingsView::getPageName() . '">Inställningar</a></li>' .
                 ($this->model->isUserLoggedIn() ? '
-              <li ' . ('' == $this->viewClassName ? 'class="active"' : '') . '><a href="?page=logout">Logga ut</a></li>
+              <li><a href="?page=logout">Logga ut</a></li>
               ' : '') . '
             </ul>
             <div><span class="label label-info pull-left">' . ($this->model->isUserLoggedIn() ?
