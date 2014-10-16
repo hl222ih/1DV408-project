@@ -4,13 +4,9 @@ namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\Model;
 
-class GenericView {
-    static private $cookieEncryptedPasswordKey = "View::EncryptedPasswordKey";
-    static private $cookieUsernameKey = "View::UsernameKey";
-    static private $postUsernameKey = "View::Username";
-    static private $postPasswordKey = "View::Password";
-    static private $postAutoLoginCheckedKey = "View::AutoLoginChecked";
-    static private $postLoginButtonNameKey = "View::LoginButtonNameKey";
+class GenericView extends ViewKeys {
+    static private $cookieEncryptedPasswordKey = "View::EncryptedPassword";
+    static private $cookieUsernameKey = "View::Username";
     static private $getPageKey = "page";
 
     private $model;
@@ -21,6 +17,7 @@ class GenericView {
         $this->username = (isset($_POST[self::$postUsernameKey]) ? $_POST[self::$postUsernameKey] : "");
         $this->password = (isset($_POST[self::$postPasswordKey]) ? $_POST[self::$postPasswordKey] : "");
         $this->autoLogin = (isset($_POST[self::$postAutoLoginCheckedKey]) ? true : false);
+
     }
 
     public function unsetCookies() {

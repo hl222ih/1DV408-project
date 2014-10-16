@@ -2,9 +2,9 @@
 
 namespace BoostMyAllowanceApp\Model;
 
-use BoostMyAllowanceApp\Dal\Dal;
-
 class User {
+
+    private static $sessionIsLoggedInKey = "User::IsLoggedIn";
 
     private $id;
 
@@ -14,18 +14,42 @@ class User {
     private $username;
     private $mappedUserIds;
 
-    public function __construct(Dal $dal, $username) {
+    //--- from session
+    private $isLoggedIn;
 
-        $info = $dal->getUserInfo($username);
+    public function __construct($username, $id, $isAdmin, $name, $mappedUserIds) {
 
-        $this->id = $info["id"];
-        $this->isAdmin = $info["isAdmin"];
-        $this->name = $info["name"];
         $this->username = $username;
-        $this->mappedUserIds = $info["mappedUserIds"];
+        $this->id = $id;
+        $this->isAdmin = $isAdmin;
+        $this->name = $name;
+        $this->mappedUserIds = $mappedUserIds;
+
+        $this->isLoggedIn = isset($_SESSION[self::$sessionIsLoggedInKey]) ? $_SESSION[self::$sessionIsLoggedInKey] : false;
     }
 
     public function isAdmin() {
         return $this->isAdmin;
+    }
+
+    public function getUsername() {
+        return $this->username;
+    }
+
+    public function getName() {
+        return $this->name;
+    }
+
+    public function isLoggedIn() {
+        return $this->isLoggedIn;
+    }
+
+    public function setLoggedIn($isLoggedIn) {
+        if ($isLoggedIn) {
+            $_SESSION[self::$sessionIsLoggedInKey] = true;
+        } else {
+            unset($_SESSION[self::$sessionIsLoggedInKey]);
+        }
+        $this->isLoggedIn = $isLoggedIn;
     }
 }

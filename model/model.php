@@ -2,7 +2,7 @@
 
 namespace BoostMyAllowanceApp\Model;
 
-use BoostMyAllowanceApp\Dal\Dal;
+use BoostMyAllowanceApp\Model\Dal\Dal;
 
 require_once("dal_/dal.php"); //refuses to commit folder /dal/ but /dal_/ works.
 require_once("admin-user-entity.php");
@@ -18,38 +18,26 @@ class Model {
     const APP_NAME = "BoostMyAllowance!";
     private $dal;
 
-    private static $sessionIsLoggedInKey = "Model::IsLoggedIn";
-    private static $sessionUsernameKey = "Model::Username";
     private static $sessionUserAgentKey = "Model::UserAgent";
     private static $sessionUserIPKey = "Model::UserIP";
+
     private static $sessionAutoLoginCheckedKey = "Model:AutoLogin";
     private static $sessionFeedbackMessageKey = "Model::FeedbackMessage";
     private static $sessionLastPostedUsername = "Model::LastPostedUsername";
-    private static $sessionMappedUsers = "Model::MappedUsers";
-    private static $sessionUnits = "Model::Units";
-    private static $sessionUser = "Model::User";
     private static $sessionRequestedPage = "Model::RequestedPage";
 
     private $user;
 
-    //private $adminUserEntities;
-
     public function __construct() {
-        if ($this->isLoggedIn()) {
-            if (!$this->isSessionIntegrityOk())
-                $this->logout();
-        }
-
-
+        $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
         $this->dal = new Dal();
-        //$this->user = $this->dal->getUser($this->getUserName());
-        //$this->otherUsers = $this->dal->getOtherUsers($this->user->getUserId());
-        //$this->tasks = $this->dal->getTasks($this->user->getUserId, $this->otherUsers->getUserdId()); //en viss eller alla?
 
-        //$this->adminUserEntities
-
-        //just for testing:
-        $this->setUser(new User($this->dal, "Admin"));
+        if ($this->isUserLoggedIn()) {
+            if (!$this->isSessionIntegrityOk())
+                $this->logoutUser();
+            else
+                $this->user = $this->dal->getUserByUsername($this->getLastPostedUsername());
+        }
     }
 
     private function doesUserAgentMatch() {
@@ -73,8 +61,8 @@ class Model {
     /**
      * @return bool
      */
-    public function isLoggedIn() {
-        return isset($_SESSION[self::$sessionIsLoggedInKey]) ? $_SESSION[self::$sessionIsLoggedInKey] : false;
+    public function isUserLoggedIn() {
+        return $this->user->isLoggedIn();
     }
 
     private function setMessage($message) {
@@ -83,6 +71,10 @@ class Model {
 
     public function getMessage() {
         return isset($_SESSION[self::$sessionFeedbackMessageKey]) ? $_SESSION[self::$sessionFeedbackMessageKey] : "";
+    }
+
+    public function unsetMessage() {
+        unset($_SESSION[self::$sessionFeedbackMessageKey]);
     }
 
     public function encryptCookiePassword($password) {
@@ -109,13 +101,13 @@ class Model {
         }
 
         if ($isSuccess) {
-            $_SESSION[self::$sessionIsLoggedInKey] = true;
+            $this->user->setLoggedIn(true);
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
-            $_SESSION[self::$sessionUsernameKey] = $username;
+//            $_SESSION[self::$sessionUsernameKey] = $username;
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
-            $this->setUser(new User($this->dal, $username));
+            //$this->setUser(new User($this->dal, $username));
         } else {
-            $this->logout();
+            $this->logoutUser();
         }
     }
 
@@ -147,30 +139,30 @@ class Model {
         }
 
         if ($isSuccess) {
-            $_SESSION[self::$sessionIsLoggedInKey] = true;
+            $this->user->setLoggedIn(true);
             $_SESSION[self::$sessionAutoLoginCheckedKey] = $autoLogin;
-            $_SESSION[self::$sessionUsernameKey] = $username;
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
-            $this->setUser(new User($this->dal, $username));
         } else {
-            $this->logout();
+            $this->logoutUser();
         }
     }
 
-    public function logout() {
-        unset($_SESSION[self::$sessionIsLoggedInKey]);
+    public function logoutUser() {
+        $this->user->setLoggedIn(false);
+
         unset($_SESSION[self::$sessionUserAgentKey]);
-        unset($_SESSION[self::$sessionUsernameKey]);
         unset($_SESSION[self::$sessionUserIPKey]);
-        unset($_SESSION[self::$sessionUser]);
+//        unset($_SESSION[self::$sessionUsernameKey]);
+//        unset($_SESSION[self::$sessionUser]);
     }
 
     public function isAutoLoginChecked() {
         return isset($_SESSION[self::$sessionAutoLoginCheckedKey]) ? $_SESSION[self::$sessionAutoLoginCheckedKey] : false;
     }
 
-    private function setUser(User $user) {
+    private function setUser() {
+        $this->dal->getUserByUsername($this->getUsersUsername());
         $_SESSION[self::$sessionUser] = serialize($user);
     }
 
@@ -188,5 +180,17 @@ class Model {
 
     public function getRequestedPage() {
         return isset($_SESSION[self::$sessionRequestedPage]) ? $_SESSION[self::$sessionRequestedPage] : "";
+    }
+
+    public function getLastPostedUsername() {
+        return isset($_SESSION[self::$sessionLastPostedUsername]) ? $_SESSION[self::$sessionLastPostedUsername] : "";
+    }
+
+    public function getUsersUsername() {
+        return $this->user->getUsername();
+    }
+
+    public function getUsersName() {
+        return $this->user->getName();
     }
 }

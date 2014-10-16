@@ -8,7 +8,7 @@ require_once("partials/head.php");
 require_once("partials/footer.php");
 require_once("partials/navigation.php");
 
-abstract class View {
+abstract class View extends ViewKeys {
 
     private $title;
     protected $model;
@@ -42,6 +42,8 @@ abstract class View {
         $footer = new Footer();
 
         $html = $footer->getHtml();
+        $html .= '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>';
+        $html .= '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>';
         $html .= '</body>' . PHP_EOL;
 
         return $html;
@@ -62,8 +64,8 @@ abstract class View {
         return (isset($_COOKIE[self::$cookieEncryptedPasswordKey]) ? $_COOKIE[self::$cookieEncryptedPasswordKey] : "");
     }
 
-    public function setEncryptedPasswordCookie($encryptedCookiePassword) {
-        $_COOKIE[self::$cookieEncryptedPasswordKey] = $encryptCookiePassword($password);
+    public function setEncryptedPasswordToCookie($encryptedCookiePassword) {
+        $_COOKIE[self::$cookieEncryptedPasswordKey] = $encryptedCookiePassword;
     }
     public function setCookiesIfAutoLogin() {
         if ($this->autoLogin) {

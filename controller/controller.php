@@ -4,6 +4,7 @@ namespace BoostMyAllowanceApp\Controller;
 
 require_once("model/model.php");
 
+require_once("view/view-keys.php");
 require_once("view/generic-view.php");
 
 require_once("view/view.php");
@@ -47,23 +48,27 @@ class Controller {
 
     public function start() {
 
-        if (!$this->model->isLoggedIn()) {
+        if (!$this->model->isUserLoggedIn()) {
             $this->model->cookieLogin(
                 $this->genericView->getUsernameFromCookie(),
                 $this->genericView->getEncryptedPasswordFromCookie()
             );
-            if (!$this->model->isLoggedIn()) {
+            if (!$this->model->isUserLoggedIn()) {
                 if ($this->genericView->wasLoginButtonClicked()) {
                     $this->model->login(
-                        $this->genericView->getUsername, password, autoLogin);
+                        $this->genericView->getUsername(),
+                        $this->genericView->getPassword(),
+                        $this->genericView->wasAutoLoginChecked()
+                    );
                 }
             }
-            if ($this->model->isLoggedIn()) {
+            if ($this->model->isUserLoggedIn()) {
                 $this->loadOrReloadLoggedInDefault();
             } else {
                 $this->genericView->unsetCookies();
-                $this->model->logout(); //and clean session
+                $this->model->logoutUser(); //and clean session
                 $requestedPage = $this->genericView->getRequestedPage();
+                $this->model->setRequestedPage($requestedPage);
                 if ($requestedPage == self::$loginViewName) {
                     $this->view = new LoginView($this->model);
                 } else {
@@ -72,6 +77,7 @@ class Controller {
             }
         } else {
             $requestedPage = $this->genericView->getRequestedPage();
+            $this->model->setRequestedPage($requestedPage);
             //TODO: validate if user has the rights to view requested page
             switch ($requestedPage) {
                 case self::$tasksViewName:
@@ -106,10 +112,12 @@ class Controller {
         }
 
         echo $this->view->getHtml();
+        $this->model->unsetMessage();
     }
 
     private function loadOrReloadLoggedInDefault() {
         $requestedPage = $this->genericView->getRequestedPage();
+        $this->model->setRequestedPage($requestedPage);
         if ($this->model->isAdmin()) {
             if ($requestedPage == self::$eventsViewName) {
                 $this->view = new EventsView($this->model);
