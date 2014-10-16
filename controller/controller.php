@@ -40,6 +40,7 @@ class Controller {
     static private $tasksViewName = "tasks";
     static private $transactionsViewName = "transactions";
     static private $eventsViewName = "events";
+    static private $logoutViewName = "logout"; //not an actual view -> logged out and redirected to login
 
     public function __construct() {
         $this->model = new Model();
@@ -106,6 +107,10 @@ class Controller {
                 case self::$transactionsViewName:
                     $this->view = new TransactionsView($this->model);
                     break;
+                case self::$logoutViewName:
+                    $this->model->logoutUser();
+                    $this->genericView->redirectPage(self::$loginViewName);
+                    break;
                 default:
                 $this->loadOrReloadLoggedInDefault();
             }
@@ -131,6 +136,5 @@ class Controller {
                 $this->genericView->redirectPage(self::$tasksViewName);
             }
         }
-
     }
 }

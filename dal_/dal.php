@@ -120,53 +120,6 @@ class Dal {
         return $encryptedPassword;
     }
 
-    /**
-     * @param $username
-     * @return array with id, isAdmin, name and mappedUserIds (zero-indexed array)
-     */
-    public function getUserInfo($username) {
-        $tableUser = "user";
-        $tableUserToUser = "user_to_user";
-        $fieldId = "id";
-        $fieldUsername = "username";
-        $fieldIsAdmin = "is_admin";
-        $fieldName = "name";
-        $fieldParentUserId = "parent_user_id";
-        $fieldChildUserId = "child_user_id";
-        //$fieldSecretToken = "secret_token"; might be needed later
-
-        $statement = $this->connection->prepare("
-                        SELECT $fieldId, $fieldIsAdmin, $fieldName
-                        FROM $tableUser
-                        WHERE $fieldUsername = :username");
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
-        $statement->execute();
-
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
-
-        $info = array(
-            "id" => $row[$fieldId],
-            "isAdmin" => $row[$fieldIsAdmin],
-            "name" => $row[$fieldName]
-        );
-        if ($row[$fieldIsAdmin]) {
-            $statement = $this->connection->prepare("
-                            SELECT $fieldChildUserId
-                            FROM $tableUserToUser
-                            WHERE $fieldParentUserId = $row[$fieldId]");
-        } else {
-            $statement = $this->connection->prepare("
-                            SELECT $fieldParentUserId
-                            FROM $tableUserToUser
-                            WHERE $fieldChildUserId = $row[$fieldId]");
-        }
-        $statement->execute();
-
-        $col = $statement->fetchAll(PDO::FETCH_COLUMN);
-
-        $info['mappedUserIds'] = $col;
-        return $info;
-    }
     public function getUserByUsername($username) {
         $tableUser = "user";
         $tableUserToUser = "user_to_user";

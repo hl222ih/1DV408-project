@@ -31,7 +31,6 @@ class Model {
     public function __construct() {
         $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
         $this->dal = new Dal();
-
         if ($this->isUserLoggedIn()) {
             if (!$this->isSessionIntegrityOk())
                 $this->logoutUser();
@@ -103,9 +102,7 @@ class Model {
         if ($isSuccess) {
             $this->user->setLoggedIn(true);
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
-//            $_SESSION[self::$sessionUsernameKey] = $username;
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
-            //$this->setUser(new User($this->dal, $username));
         } else {
             $this->logoutUser();
         }
@@ -114,6 +111,7 @@ class Model {
     public function login($username, $password, $autoLogin) {
         $isSuccess = false;
         $username = trim($username);
+        $_SESSION[self::$sessionLastPostedUsername] = $username;
 
         if (!$username) {
             $this->setMessage("Användarnamn saknas");
@@ -153,25 +151,24 @@ class Model {
 
         unset($_SESSION[self::$sessionUserAgentKey]);
         unset($_SESSION[self::$sessionUserIPKey]);
-//        unset($_SESSION[self::$sessionUsernameKey]);
-//        unset($_SESSION[self::$sessionUser]);
     }
 
     public function isAutoLoginChecked() {
         return isset($_SESSION[self::$sessionAutoLoginCheckedKey]) ? $_SESSION[self::$sessionAutoLoginCheckedKey] : false;
     }
 
-    private function setUser() {
-        $this->dal->getUserByUsername($this->getUsersUsername());
-        $_SESSION[self::$sessionUser] = serialize($user);
-    }
+    //private function setUser() {
+    //    $this->dal->getUserByUsername($this->getUsersUsername());
+    //    $_SESSION[self::$sessionUser] = serialize($user);
+    //}
 
-    public function getUser() {
-        return unserialize($_SESSION[self::$sessionUser]);
-    }
+    //public function getUser() {
+        //return unserialize($_SESSION[self::$sessionUser]);
+
+    //}
 
     public function isAdmin() {
-        return $this->getUser()->isAdmin();
+        return $this->user->isAdmin();
     }
 
     public function setRequestedPage($page) {
