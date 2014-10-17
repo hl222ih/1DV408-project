@@ -10,8 +10,8 @@ class Footer {
 
     public function getHtml() {
         return '
-        <footer>
-            <p>footer is not implemented...</p>
+        <footer class="well well-sm">
+            Hannes Ljusås (hl222ih) - 1DV408 projekt - lnu.se
         </footer>
         ';
     }
