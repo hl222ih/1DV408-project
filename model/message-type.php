@@ -2,7 +2,6 @@
 
 namespace BoostMyAllowanceApp\Model;
 
-
 abstract class MessageType {
     const Info = 0;
     const Success = 1;

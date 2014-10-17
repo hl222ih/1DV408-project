@@ -168,16 +168,6 @@ class Model {
         return isset($_SESSION[self::$sessionAutoLoginCheckedKey]) ? $_SESSION[self::$sessionAutoLoginCheckedKey] : false;
     }
 
-    //private function setUser() {
-    //    $this->dao->getUserByUsername($this->getUsersUsername());
-    //    $_SESSION[self::$sessionUser] = serialize($user);
-    //}
-
-    //public function getUser() {
-        //return unserialize($_SESSION[self::$sessionUser]);
-
-    //}
-
     public function isUserAdmin() {
         return $this->user->getIsAdmin();
     }
