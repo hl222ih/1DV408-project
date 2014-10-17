@@ -1,12 +1,13 @@
 <?php
 
-namespace BoostMyAllowanceApp\Model\Dal;
+namespace BoostMyAllowanceApp\Model\Dao;
 
 use PDO;
 use BoostMyAllowanceApp\Model\User;
+
 require_once("database-config.php");
 
-class Dal {
+class Dao {
 
     private $connection;
     private $config;
@@ -29,7 +30,7 @@ class Dal {
                         SELECT 1
                         FROM user
                         WHERE username = :username');
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -44,7 +45,7 @@ class Dal {
                           SELECT $fieldIsAdmin
                           FROM user
                           WHERE username = :username");
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -62,7 +63,7 @@ class Dal {
                           SELECT $fieldCookiePassword
                           FROM user
                           WHERE username = :username");
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -86,7 +87,7 @@ class Dal {
                           SELECT *
                           FROM user
                           WHERE username = :username");
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -115,7 +116,7 @@ class Dal {
                           SELECT $fieldSalt, $fieldSaltedPassword
                           FROM $tableUser
                           WHERE $fieldUsername = :username");
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -150,7 +151,7 @@ class Dal {
                         SELECT $fieldId, $fieldIsAdmin, $fieldName
                         FROM $tableUser
                         WHERE $fieldUsername = :username");
-        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
@@ -191,12 +192,19 @@ class Dal {
 
         $statement = $this->connection->prepare("
                         INSERT INTO $tableUser ($fieldIsAdmin, $fieldName, $fieldUsername, $fieldSecretToken, $fieldSaltedPassword, $fieldSalt)
-                        VALUES ('$isAdmin', '$name', '$username', '$secretToken', '$saltedPassword', '$salt')
+                        VALUES (:is_admin, :name, :username, :secret_token, :salted_password, :salt)
                         ");
+        $statement->bindParam(':is_admin', $isAdmin, PDO::PARAM_BOOL);
+        $statement->bindParam(':name', $name, PDO::PARAM_STR);
+        $statement->bindParam(':username', $username, PDO::PARAM_STR);
+        $statement->bindParam(':secret_token', $secretToken, PDO::PARAM_STR);
+        $statement->bindParam(':salted_password', $saltedPassword, PDO::PARAM_STR);
+        $statement->bindParam(':salt', $salt, PDO::PARAM_STR);
 
         $isSuccess = $statement->execute();
+
         return $isSuccess;
-}
+    }
 
     //**A secret token would be needed to map another user to ones account
     //private function generateSecretToken() {

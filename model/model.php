@@ -2,9 +2,9 @@
 
 namespace BoostMyAllowanceApp\Model;
 
-use BoostMyAllowanceApp\Model\Dal\Dal;
+use BoostMyAllowanceApp\Model\Dao\Dao;
 
-require_once("dal_/dal.php"); //refuses to commit folder /dal/ but /dal_/ works.
+require_once("dao/dao.php");
 require_once("admin-user-entity.php");
 require_once("event.php");
 require_once("log-item.php");
@@ -18,7 +18,7 @@ require_once("message.php");
 class Model {
 
     const APP_NAME = "BoostMyAllowance!";
-    private $dal;
+    private $dao;
 
     private static $sessionUserAgentKey = "Model::UserAgent";
     private static $sessionUserIPKey = "Model::UserIP";
@@ -33,13 +33,13 @@ class Model {
     private $user;
 
     public function __construct() {
-        $this->dal = new Dal();
+        $this->dao = new Dao();
         $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
         if ($this->isUserLoggedIn()) {
             if (!$this->isSessionIntegrityOk())
                 $this->logoutUser();
             else
-                $this->user = $this->dal->getUserByUsername($this->getLastPostedUsername());
+                $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
         }
     }
 
@@ -95,9 +95,9 @@ class Model {
         $this->setLastPostedUsername($username);
         $isSuccess = false;
 
-        if ($this->dal->doesUserExist($username)) {
-            if ($this->dal->doesCookiePasswordMatch($username, $encryptedCookiePassword)) {
-                if ($this->dal->isCookieExpirationValid($username)) {
+        if ($this->dao->doesUserExist($username)) {
+            if ($this->dao->doesCookiePasswordMatch($username, $encryptedCookiePassword)) {
+                if ($this->dao->isCookieExpirationValid($username)) {
                     $this->setMessage("Inloggningen lyckades via cookies", MessageType::Success);
                     $isSuccess = true;
                 } else {
@@ -110,7 +110,7 @@ class Model {
 
         if ($isSuccess) {
             $this->user->setLoggedIn(true);
-            $this->user->setIsAdmin($this->dal->isUserAdmin($username));
+            $this->user->setIsAdmin($this->dao->isUserAdmin($username));
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
         } else {
@@ -129,8 +129,8 @@ class Model {
             if (!$password) {
                 $this->setMessage("Lösenord saknas", MessageType::Error);
             } else {
-                if ($this->dal->doesUserExist($username)) {
-                    if ($this->dal->doesPasswordMatch($username, $password)) {
+                if ($this->dao->doesUserExist($username)) {
+                    if ($this->dao->doesPasswordMatch($username, $password)) {
                         if ($autoLogin) {
                             $this->setMessage("Inloggning lyckades och vi kommer ihåg dig nästa gång", MessageType::Success);
                         } else {
@@ -148,7 +148,7 @@ class Model {
 
         if ($isSuccess) {
             $this->user->setLoggedIn(true);
-            $this->user->setIsAdmin($this->dal->isUserAdmin($username));
+            $this->user->setIsAdmin($this->dao->isUserAdmin($username));
             $_SESSION[self::$sessionAutoLoginCheckedKey] = $autoLogin;
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
@@ -169,7 +169,7 @@ class Model {
     }
 
     //private function setUser() {
-    //    $this->dal->getUserByUsername($this->getUsersUsername());
+    //    $this->dao->getUserByUsername($this->getUsersUsername());
     //    $_SESSION[self::$sessionUser] = serialize($user);
     //}
 
@@ -221,6 +221,10 @@ class Model {
         }
     }
 
+    public function unsetLastPostedName() {
+        unset($_SESSION[self::$sessionLastPostedName]);
+    }
+
     public function setLastPostedRegisterAdminAccountChecked($wasAdminChecked) {
         if ($wasAdminChecked) {
             $_SESSION[self::$sessionLastRegisterAdminAccountChecked] = true;
@@ -245,7 +249,7 @@ class Model {
         }
 
         if ($isInputOk) {
-            $isSuccess = $this->dal->registerNewUser($username, $password, $name, $createAdminAccount);
+            $isSuccess = $this->dao->registerNewUser($username, $password, $name, $createAdminAccount);
             if ($isSuccess) {
                 $this->unsetLastPostedName();
                 $this->setMessage("Användarkonto för " . $name . " har skapats.", MessageType::Success);
