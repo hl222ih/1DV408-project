@@ -67,4 +67,4 @@ class GenericView extends ViewKeys {
         header('location: ' . $_SERVER['PHP_SELF'] . ($page ? "?". self::$getPageKey . "=" . $page : ""));
         die;
     }
-} 
+}

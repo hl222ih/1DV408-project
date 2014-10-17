@@ -98,4 +98,27 @@ abstract class View extends ViewKeys {
         preg_match("/\\\\(\w*)View$/", get_called_class(), $matches);
         return lcfirst($matches[1]);
     }
+
+    public function getAlertCssClass($messageType) {
+        $alertCssClass = "";
+
+        switch ($messageType) {
+            case 0:
+                $alertCssClass = "info";
+                break;
+            case 1:
+                $alertCssClass = "success";
+                break;
+            case 2:
+                $alertCssClass = "danger";
+                break;
+            case 3:
+                $alertCssClass = "warning";
+                break;
+            default:
+                $alertCssClass = "info";
+        }
+
+        return $alertCssClass;
+    }
 }

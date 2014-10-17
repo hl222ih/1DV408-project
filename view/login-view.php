@@ -11,8 +11,8 @@ class LoginView extends View {
     }
 
     function getHtml() {
-        $html = ($this->model->getMessage() ? '<div class="alert alert-success" role="alert">
-        ' . $this->model->getMessage() . '</div>' : '')
+        $html = ($this->model->hasMessage() ? '<div class="alert alert-' . $this->getAlertCssClass($this->model->getMessage()->getMessageType()) . '" role="alert">
+        ' . $this->model->getMessage()->getMessageText() . '</div>' : '')
             . '
             <div class="panel panel-info">
             <div class="panel-heading">

@@ -36,6 +36,25 @@ class Dal {
         return ($row ? true : false);
     }
 
+    public function isUserAdmin($username) {
+        $fieldIsAdmin = "is_admin";
+        $isAdmin = false;
+
+        $statement = $this->connection->prepare("
+                          SELECT $fieldIsAdmin
+                          FROM user
+                          WHERE username = :username");
+        $statement->bindParam('username', $username, PDO::PARAM_STR);
+        $statement->execute();
+
+        $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+           $isAdmin = ($row[$fieldIsAdmin]);
+        }
+        return $isAdmin;
+    }
+
     public function doesCookiePasswordMatch($username, $encryptedCookiePassword) {
         $fieldCookiePassword = "cookie_password";
 
@@ -140,11 +159,6 @@ class Dal {
 
         $row = $statement->fetch(PDO::FETCH_ASSOC);
 
-    //    $info = array(
-    //        "id" => $row[$fieldId],
-    //        "isAdmin" => $row[$fieldIsAdmin],
-    //        "name" => $row[$fieldName]
-    //    );
         if ($row[$fieldIsAdmin]) {
             $statement = $this->connection->prepare("
                             SELECT $fieldChildUserId

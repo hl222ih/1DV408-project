@@ -28,8 +28,12 @@ class User {
         $this->isLoggedIn = isset($_SESSION[self::$sessionIsLoggedInKey]) ? $_SESSION[self::$sessionIsLoggedInKey] : false;
     }
 
-    public function isAdmin() {
+    public function getIsAdmin() {
         return $this->isAdmin;
+    }
+
+    public function setIsAdmin($isAdmin) {
+        $this->isAdmin = $isAdmin;
     }
 
     public function getUsername() {

@@ -12,6 +12,8 @@ require_once("task.php");
 require_once("transaction.php");
 require_once("unit.php");
 require_once("user.php");
+require_once("message-type.php");
+require_once("message.php");
 
 class Model {
 
@@ -29,8 +31,8 @@ class Model {
     private $user;
 
     public function __construct() {
-        $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
         $this->dal = new Dal();
+        $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
         if ($this->isUserLoggedIn()) {
             if (!$this->isSessionIntegrityOk())
                 $this->logoutUser();
@@ -64,12 +66,17 @@ class Model {
         return $this->user->isLoggedIn();
     }
 
-    private function setMessage($message) {
-        $_SESSION[self::$sessionFeedbackMessageKey] = $message;
+    private function setMessage($message, $messageType = MessageType::Info) {
+        //$_SESSION[self::$sessionFeedbackMessageKey] = $message;
+        $_SESSION[self::$sessionFeedbackMessageKey] = serialize(new Message($message, $messageType));
     }
 
     public function getMessage() {
-        return isset($_SESSION[self::$sessionFeedbackMessageKey]) ? $_SESSION[self::$sessionFeedbackMessageKey] : "";
+        return isset($_SESSION[self::$sessionFeedbackMessageKey]) ? unserialize($_SESSION[self::$sessionFeedbackMessageKey]) : "";
+    }
+
+    public function hasMessage() {
+        return isset($_SESSION[self::$sessionFeedbackMessageKey]);
     }
 
     public function unsetMessage() {
@@ -83,24 +90,25 @@ class Model {
 
     public function cookieLogin($username, $encryptedCookiePassword) {
         $username = trim($username);
-        $_SESSION[self::$sessionLastPostedUsername] = $username;
+        $this->setLastPostedUsername($username);
         $isSuccess = false;
 
         if ($this->dal->doesUserExist($username)) {
             if ($this->dal->doesCookiePasswordMatch($username, $encryptedCookiePassword)) {
                 if ($this->dal->isCookieExpirationValid($username)) {
-                    $this->setMessage("Inloggningen lyckades via cookies");
+                    $this->setMessage("Inloggningen lyckades via cookies", MessageType::Success);
                     $isSuccess = true;
                 } else {
-                    $this->setMessage("Felaktig information i cookie");
+                    $this->setMessage("Felaktig information i cookie", MessageType::Error);
                 }
             } else {
-                $this->setMessage("Felaktig information i cookie");
+                $this->setMessage("Felaktig information i cookie", MessageType::Error);
             }
         }
 
         if ($isSuccess) {
             $this->user->setLoggedIn(true);
+            $this->user->setIsAdmin($this->dal->isUserAdmin($username));
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
         } else {
@@ -111,33 +119,34 @@ class Model {
     public function login($username, $password, $autoLogin) {
         $isSuccess = false;
         $username = trim($username);
-        $_SESSION[self::$sessionLastPostedUsername] = $username;
+        $this->setLastPostedUsername($username);
 
         if (!$username) {
-            $this->setMessage("Användarnamn saknas");
+            $this->setMessage("Användarnamn saknas", MessageType::Error);
         } else {
             if (!$password) {
-                $this->setMessage("Lösenord saknas");
+                $this->setMessage("Lösenord saknas", MessageType::Error);
             } else {
                 if ($this->dal->doesUserExist($username)) {
                     if ($this->dal->doesPasswordMatch($username, $password)) {
                         if ($autoLogin) {
-                            $this->setMessage("Inloggning lyckades och vi kommer ihåg dig nästa gång");
+                            $this->setMessage("Inloggning lyckades och vi kommer ihåg dig nästa gång", MessageType::Success);
                         } else {
-                            $this->setMessage("Inloggning lyckades");
+                            $this->setMessage("Inloggning lyckades", MessageType::Success);
                         }
                         $isSuccess = true;
                     } else {
-                        $this->setMessage("Felaktigt användarnamn och/eller lösenord");
+                        $this->setMessage("Felaktigt användarnamn och/eller lösenord", MessageType::Error);
                     }
                 } else {
-                    $this->setMessage("Felaktigt användarnamn och/eller lösenord");
+                    $this->setMessage("Felaktigt användarnamn och/eller lösenord", MessageType::Error);
                 }
             }
         }
 
         if ($isSuccess) {
             $this->user->setLoggedIn(true);
+            $this->user->setIsAdmin($this->dal->isUserAdmin($username));
             $_SESSION[self::$sessionAutoLoginCheckedKey] = $autoLogin;
             $_SESSION[self::$sessionUserAgentKey] = $_SERVER['HTTP_USER_AGENT'];
             $_SESSION[self::$sessionUserIPKey] = $_SERVER['REMOTE_ADDR'];
@@ -168,7 +177,7 @@ class Model {
     //}
 
     public function isUserAdmin() {
-        return $this->user->isAdmin();
+        return $this->user->getIsAdmin();
     }
 
     public function setRequestedPage($page) {
@@ -189,5 +198,9 @@ class Model {
 
     public function getUsersName() {
         return $this->user->getName();
+    }
+
+    public function setLastPostedUsername($username) {
+        $_SESSION[self::$sessionLastPostedUsername] = trim($username);
     }
 }
