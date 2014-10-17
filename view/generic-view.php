@@ -48,6 +48,9 @@ class GenericView extends ViewKeys {
     public function wasLoginButtonClicked() {
         return isset($_POST[self::$postLoginButtonNameKey]);
     }
+    public function wasRegisterButtonClicked() {
+        return isset($_POST[self::$postRegisterButtonNameKey]);
+    }
 
     public function getUsername() {
         return $this->username;

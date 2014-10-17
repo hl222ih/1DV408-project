@@ -36,7 +36,7 @@ abstract class View extends ViewKeys {
         $html .= $navigation->getHtml();
         $html .= ($this->model->hasMessage() ? '<div class="alert alert-' . $this->getAlertCssClass($this->model->getMessage()->getMessageType()) . '" role="alert"><a href="#" class="close" data-dismiss="alert">&times;</a>
         ' . $this->model->getMessage()->getMessageText() . '</div>' : '');
-        
+
         return $html;
     }
 

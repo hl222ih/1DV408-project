@@ -54,6 +54,8 @@ class Controller {
                         $this->genericView->getPassword(),
                         $this->genericView->wasAutoLoginChecked()
                     );
+                } else if ($this->genericView->wasRegisterButtonClicked()) {
+                    $this->model->register();
                 }
             }
             if ($this->model->isUserLoggedIn()) {
@@ -65,6 +67,8 @@ class Controller {
                 $this->model->setRequestedPage($requestedPage);
                 if ($requestedPage == LoginView::getPageName()) {
                     $this->view = new LoginView($this->model);
+                } else if ($requestedPage == RegisterView::getPageName()) {
+                    $this->view = new RegisterView($this->model);
                 } else {
                     $this->genericView->redirectPage(LoginView::getPageName());
                 }
@@ -94,7 +98,6 @@ class Controller {
                     $this->view = new SettingsView($this->model);
                     break;
                 case RegisterView::getPageName():
-                    //TODO: log user out first
                     $this->view = new RegisterView($this->model);
                     break;
                 case TransactionsView::getPageName():

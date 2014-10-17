@@ -11,7 +11,39 @@ class RegisterView extends View {
     }
 
     function getHtml() {
-        $html = "<p>Content missing...</p>";
+        $html = '
+            <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title">Fyll i användaruppgifter</h3>
+            </div>
+            <div class="panel-body">
+            <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+            <div class="form-group">
+                    <label for="nameId">Namn:</label>
+                    <input class="form-control" type="text" name="' . self::$postNameKey . '" id="nameId"
+                    value="' . $this->model->getLastPostedUsername() . '" autofocus />
+            </div>
+            <div class="form-group">
+                    <label for="usernameId">Användarnamn:</label>
+                    <input class="form-control" type="text" name="' . self::$postUsernameKey . '" id="usernameId"
+                    value="' . $this->model->getLastPostedUsername() . '" autofocus />
+            </div>
+            <div class="form-group">
+                <label for="passwordId">Lösenord:</label>
+                <input class="form-control" type="password" name="' . self::$postPasswordKey . '" id="passwordId" />
+            </div>
+            <div class="form-group">
+                <label for="passwordAgainId">Lösenord (igen):</label>
+                <input class="form-control" type="password" name="' . self::$postPasswordAgainKey . '" id="passwordAgainId" />
+            </div>
+            <div class="checkbox">
+            <label><input type="checkbox" name="' . self::$postAdminAccountCheckedKey . '" id="adminAccountId"' .
+        (isset($_POST[self::$postAdminAccountCheckedKey]) ? "checked" : "") . ' />Skapa administratörskonto</label>
+            </div>
+            <input type="submit" class="btn btn-primary pull-right" name="' . self::$postRegisterButtonNameKey . '" value="Registrera" />
+            </form>
+            </div>
+            </div>';
 
         return parent::getSurroundingHtml($html);
     }

@@ -203,4 +203,9 @@ class Model {
     public function setLastPostedUsername($username) {
         $_SESSION[self::$sessionLastPostedUsername] = trim($username);
     }
+
+    public function register() {
+        //TODO: implement register new user
+        $this->setMessage("Åh, nej! Registrering av användare inte möjlig ännu.", MessageType::Warning);
+    }
 }

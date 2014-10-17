@@ -47,7 +47,7 @@ class Navigation {
               <li><a href="?page=logout">Logga ut</a></li>
               ' : '') . '
             </ul>
-            <div><span class="label label-info pull-left">' . ($this->model->isUserLoggedIn() ?
+            <div><span class="label label-info pull-right">' . ($this->model->isUserLoggedIn() ?
             'Inloggad som ' . $this->model->getUsersName() . ' ' :
             'Ej inloggad') . '</span></div>
           </div>
