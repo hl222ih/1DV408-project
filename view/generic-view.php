@@ -11,13 +11,23 @@ class GenericView extends ViewKeys {
 
     private $model;
 
+    //form fields...
+    private $username;
+    private $password;
+    private $autoLogin;
+    private $passwordAgain;
+    private $name;
+    private $createAdminAccount;
+
     public function __construct(Model $model) {
         $this->model = $model;
 
         $this->username = (isset($_POST[self::$postUsernameKey]) ? $_POST[self::$postUsernameKey] : "");
         $this->password = (isset($_POST[self::$postPasswordKey]) ? $_POST[self::$postPasswordKey] : "");
         $this->autoLogin = (isset($_POST[self::$postAutoLoginCheckedKey]) ? true : false);
-
+        $this->passwordAgain = (isset($_POST[self::$postPasswordAgainKey]) ? $_POST[self::$postPasswordAgainKey] : "");
+        $this->name = (isset($_POST[self::$postNameKey]) ? $_POST[self::$postNameKey] : "");
+        $this->createAdminAccount = (isset($_POST[self::$postAdminAccountCheckedKey]) ? true : false);
     }
 
     public function unsetCookies() {
@@ -55,9 +65,11 @@ class GenericView extends ViewKeys {
     public function getUsername() {
         return $this->username;
     }
+
     public function getPassword() {
         return $this->password;
     }
+
     public function wasAutoLoginChecked() {
         return $this->autoLogin;
     }
@@ -70,4 +82,17 @@ class GenericView extends ViewKeys {
         header('location: ' . $_SERVER['PHP_SELF'] . ($page ? "?". self::$getPageKey . "=" . $page : ""));
         die;
     }
+
+    public function wasCreateAdminAccountChecked() {
+        return $this->createAdminAccount;
+    }
+
+    public function getName() {
+        return $this->name;
+    }
+
+    public function getPasswordAgain() {
+        return $this->passwordAgain;
+    }
+
 }

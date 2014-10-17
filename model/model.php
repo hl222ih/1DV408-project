@@ -27,6 +27,8 @@ class Model {
     private static $sessionFeedbackMessageKey = "Model::FeedbackMessage";
     private static $sessionLastPostedUsername = "Model::LastPostedUsername";
     private static $sessionRequestedPage = "Model::RequestedPage";
+    private static $sessionLastPostedName = "Model::LastPostedName";
+    private static $sessionLastRegisterAdminAccountChecked = "Model:LastPostedRegisterAdminAccountChecked";
 
     private $user;
 
@@ -192,6 +194,10 @@ class Model {
         return isset($_SESSION[self::$sessionLastPostedUsername]) ? $_SESSION[self::$sessionLastPostedUsername] : "";
     }
 
+    public function getLastPostedName() {
+        return isset($_SESSION[self::$sessionLastPostedName]) ? $_SESSION[self::$sessionLastPostedName] : "";
+    }
+
     public function getUsersUsername() {
         return $this->user->getUsername();
     }
@@ -201,11 +207,60 @@ class Model {
     }
 
     public function setLastPostedUsername($username) {
-        $_SESSION[self::$sessionLastPostedUsername] = trim($username);
+        $username = trim($username);
+
+        if ($username) {
+            $_SESSION[self::$sessionLastPostedUsername] = $username;
+        }
+    }
+    public function setLastPostedName($name) {
+        $name = trim($name);
+
+        if ($name) {
+            $_SESSION[self::$sessionLastPostedName] = $name;
+        }
     }
 
-    public function register() {
-        //TODO: implement register new user
-        $this->setMessage("Åh, nej! Registrering av användare inte möjlig ännu.", MessageType::Warning);
+    public function setLastPostedRegisterAdminAccountChecked($wasAdminChecked) {
+        if ($wasAdminChecked) {
+            $_SESSION[self::$sessionLastRegisterAdminAccountChecked] = true;
+        } else {
+            unset($_SESSION[self::$sessionLastRegisterAdminAccountChecked]);
+        }
+    }
+
+    public function getLastPostedRegisterAdminAccountChecked() {
+        return isset($_SESSION[self::$sessionLastRegisterAdminAccountChecked]) ? true : false;
+    }
+
+    public function registerNewUser($username, $password, $passwordAgain, $name, $createAdminAccount) {
+        //TODO: verify user data
+        $isInputOk = true;
+        $isSuccess = false;
+
+        //for starters...
+        if ($password != $passwordAgain) {
+            $isInputOk = false;
+            $this->setMessage("Lösenorden matchar inte.", MessageType::Error);
+        }
+
+        if ($isInputOk) {
+            $isSuccess = $this->dal->registerNewUser($username, $password, $name, $createAdminAccount);
+            if ($isSuccess) {
+                $this->unsetLastPostedName();
+                $this->setMessage("Användarkonto för " . $name . " har skapats.", MessageType::Success);
+                $this->setLastPostedUsername($username);
+            } else {
+                $this->setMessage("Ett oväntat fel inträffade när användarkontot skulle skapas.", MessageType::Error);
+                $this->setLastPostedUsername($username);
+                $this->setLastPostedRegisterAdminAccountChecked(true);
+            }
+        } else {
+            $this->setLastPostedName($name);
+            $this->setLastPostedRegisterAdminAccountChecked(true);
+            $this->setLastPostedUsername($username);
+        }
+
+        return $isSuccess;
     }
 }

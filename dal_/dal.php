@@ -122,12 +122,8 @@ class Dal {
 
         $isMatch = false;
         if ($row) {
-            $dbSalt = isset($row[$fieldSalt]) ? $row[$fieldSalt] : false; //isset maybe not needed
-            $dbSaltedPassword = isset($row[$fieldSaltedPassword]) ? $row[$fieldSaltedPassword] : false; //isset maybe not needed
-            if ($dbSalt && $dbSaltedPassword) {
-                if ($this->encryptPassword($password, $dbSalt) == $dbSaltedPassword) {
-                    $isMatch = true;
-                }
+            if ($this->encryptPassword($password, $row[$fieldSalt]) == $row[$fieldSaltedPassword]) {
+                $isMatch = true;
             }
         }
 
@@ -178,4 +174,32 @@ class Dal {
 
         return $user;
     }
+
+
+    public function registerNewUser($username, $password, $name, $isAdmin) {
+        $tableUser = "user";
+        $fieldUsername = "username";
+        $fieldIsAdmin = "is_admin";
+        $fieldName = "name";
+        $fieldSecretToken = "secret_token";
+        $fieldSaltedPassword = "salted_password";
+        $fieldSalt = "salt";
+
+        $secretToken = ""; //empty for now...
+        $salt = $username; //username as salt
+        $saltedPassword = $this->encryptPassword($password, $salt);
+
+        $statement = $this->connection->prepare("
+                        INSERT INTO $tableUser ($fieldIsAdmin, $fieldName, $fieldUsername, $fieldSecretToken, $fieldSaltedPassword, $fieldSalt)
+                        VALUES ('$isAdmin', '$name', '$username', '$secretToken', '$saltedPassword', '$salt')
+                        ");
+
+        $isSuccess = $statement->execute();
+        return $isSuccess;
+}
+
+    //**A secret token would be needed to map another user to ones account
+    //private function generateSecretToken() {
+    //}
+
 }

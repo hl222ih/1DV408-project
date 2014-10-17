@@ -55,7 +55,17 @@ class Controller {
                         $this->genericView->wasAutoLoginChecked()
                     );
                 } else if ($this->genericView->wasRegisterButtonClicked()) {
-                    $this->model->register();
+                    if ($this->model->registerNewUser(
+                        $this->genericView->getUsername(),
+                        $this->genericView->getPassword(),
+                        $this->genericView->getPasswordAgain(),
+                        $this->genericView->getName(),
+                        $this->genericView->wasCreateAdminAccountChecked()
+                    )) {
+                        $this->genericView->redirectPage(LoginView::getPageName());
+                    } else {
+                        $this->genericView->redirectPage(RegisterView::getPageName());
+                    };
                 }
             }
             if ($this->model->isUserLoggedIn()) {

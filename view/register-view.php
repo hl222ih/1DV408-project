@@ -21,12 +21,12 @@ class RegisterView extends View {
             <div class="form-group">
                     <label for="nameId">Namn:</label>
                     <input class="form-control" type="text" name="' . self::$postNameKey . '" id="nameId"
-                    value="' . $this->model->getLastPostedUsername() . '" autofocus />
+                    value="' . $this->model->getLastPostedName() . '" autofocus />
             </div>
             <div class="form-group">
                     <label for="usernameId">Användarnamn:</label>
                     <input class="form-control" type="text" name="' . self::$postUsernameKey . '" id="usernameId"
-                    value="' . $this->model->getLastPostedUsername() . '" autofocus />
+                    value="' . $this->model->getLastPostedUsername() . '" />
             </div>
             <div class="form-group">
                 <label for="passwordId">Lösenord:</label>
@@ -38,7 +38,7 @@ class RegisterView extends View {
             </div>
             <div class="checkbox">
             <label><input type="checkbox" name="' . self::$postAdminAccountCheckedKey . '" id="adminAccountId"' .
-        (isset($_POST[self::$postAdminAccountCheckedKey]) ? "checked" : "") . ' />Skapa administratörskonto</label>
+            ($this->model->getLastPostedRegisterAdminAccountChecked() ? "checked" : "") . ' />Skapa administratörskonto</label>
             </div>
             <input type="submit" class="btn btn-primary pull-right" name="' . self::$postRegisterButtonNameKey . '" value="Registrera" />
             </form>
