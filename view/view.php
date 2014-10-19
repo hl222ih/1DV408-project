@@ -2,6 +2,7 @@
 
 namespace BoostMyAllowanceApp\View;
 
+use BoostMyAllowanceApp\Model\MessageType;
 use BoostMyAllowanceApp\Model\Model;
 
 require_once("partials/head.php");
@@ -34,7 +35,9 @@ abstract class View extends ViewKeys {
         $html .= $head->getHtml();
         $html .= '<body>' . PHP_EOL;
         $html .= $navigation->getHtml();
-        $html .= ($this->model->hasMessage() ? '<div class="alert alert-' . $this->getAlertCssClass($this->model->getMessage()->getMessageType()) . '" role="alert"><a href="#" class="close" data-dismiss="alert">&times;</a>
+        $html .= ($this->model->hasMessage() ? '<div class="alert alert-' .
+            $this->getAlertCssClass($this->model->getMessage()->getMessageType()) .
+            '" role="alert"><a href="#" class="close" data-dismiss="alert">&times;</a>
         ' . $this->model->getMessage()->getMessageText() . '</div>' : '');
 
         return $html;
@@ -102,25 +105,28 @@ abstract class View extends ViewKeys {
     }
 
     public function getAlertCssClass($messageType) {
-        $alertCssClass = "";
 
         switch ($messageType) {
-            case 0:
+            case MessageType::Info:
                 $alertCssClass = "info";
                 break;
-            case 1:
+            case MessageType::Success:
                 $alertCssClass = "success";
                 break;
-            case 2:
+            case MessageType::Error:
                 $alertCssClass = "danger";
                 break;
-            case 3:
+            case MessageType::Warning:
                 $alertCssClass = "warning";
                 break;
             default:
-                $alertCssClass = "info";
+                $alertCssClass = "default";
         }
 
         return $alertCssClass;
+    }
+
+    protected function formatTimestamp($timestamp) {
+        return date("Y-m-d H:i", $timestamp);
     }
 }

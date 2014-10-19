@@ -14,7 +14,7 @@ class LoginView extends View {
         $html = '
 <div class="panel panel-info">
     <div class="panel-heading">
-        <h3 class="panel-title">Fyll i inloggningsinformation</h3>
+        <h3 class="panel-title">Fyll i dina inloggningsuppgifter</h3>
     </div>
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'] . '" method="post">

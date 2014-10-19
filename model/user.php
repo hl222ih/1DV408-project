@@ -12,7 +12,8 @@ class User {
 
     private $name;
     private $username;
-    private $mappedUserIds;
+    private $mappedUsersIds;
+
 
     //--- from session
     private $isLoggedIn;
@@ -23,7 +24,7 @@ class User {
         $this->id = $id;
         $this->isAdmin = $isAdmin;
         $this->name = $name;
-        $this->mappedUserIds = $mappedUserIds;
+        $this->mappedUsersIds = $mappedUserIds;
 
         $this->isLoggedIn = isset($_SESSION[self::$sessionIsLoggedInKey]) ? $_SESSION[self::$sessionIsLoggedInKey] : false;
     }
@@ -55,5 +56,13 @@ class User {
             unset($_SESSION[self::$sessionIsLoggedInKey]);
         }
         $this->isLoggedIn = $isLoggedIn;
+    }
+
+    public function getId() {
+        return $this->id;
+    }
+
+    public function getMappedUsersIds() {
+        return $this->mappedUsersIds;
     }
 }

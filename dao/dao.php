@@ -4,6 +4,8 @@ namespace BoostMyAllowanceApp\Model\Dao;
 
 use PDO;
 use BoostMyAllowanceApp\Model\User;
+use BoostMyAllowanceApp\Model\Task;
+use BoostMyAllowanceApp\Model\AdminUserEntity;
 
 require_once("database-config.php");
 
@@ -11,6 +13,9 @@ class Dao {
 
     private $connection;
     private $config;
+
+    private $userId;
+    private $mappedUserIds;
 
     public function __construct() {
         $this->config = new DatabaseConfig();
@@ -169,9 +174,9 @@ class Dao {
         }
         $statement->execute();
 
-        $mappedUserIds = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $mappedUsersIds = $statement->fetchAll(PDO::FETCH_COLUMN);
 
-        $user = new User($username, $row[$fieldId], $row[$fieldIsAdmin], $row[$fieldName], $mappedUserIds);
+        $user = new User($username, $row[$fieldId], $row[$fieldIsAdmin], $row[$fieldName], $mappedUsersIds);
 
         return $user;
     }
@@ -210,4 +215,103 @@ class Dao {
     //private function generateSecretToken() {
     //}
 
+    public function getTasksByUserId($userId) {
+        $tableTask = "task";
+        $fieldUserToUserId = "user_to_user_id";
+
+        $fieldId = "id";
+        $fieldUnitId = "unit_id";
+        $fieldValidFrom = "valid_from";
+        $fieldValidTo = "valid_to";
+        $fieldRewardValue = "reward_value";
+        $fieldPenaltyValue = "penalty_value";
+        $fieldTimeOfRequest = "time_of_request";
+        $fieldTimeOfResponse = "time_of_response";
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+        $fieldTitle = "title";
+        $fieldDescription = "description";
+
+        $userToUserIds = $this->getUserToUserIds($userId);
+
+        $tasks = array();
+
+        foreach($userToUserIds as $userToUserId) {
+            $statement = $this->connection->prepare("
+                        SELECT *
+                        FROM $tableTask
+                        WHERE $fieldUserToUserId = :user_to_user_id");
+            $statement->bindParam(':user_to_user_id', $userToUserId, PDO::PARAM_STR);
+            $statement->execute();
+
+            $row = $statement->fetch(PDO::FETCH_ASSOC);
+
+            if ($row) {
+                $task = new Task($row[$fieldId], $row[$fieldUserToUserId], $row[$fieldUnitId], strtotime($row[$fieldValidFrom]),
+                    strtotime($row[$fieldValidTo]), $row[$fieldRewardValue], $row[$fieldPenaltyValue], strtotime($row[$fieldTimeOfRequest]),
+                    strtotime($row[$fieldTimeOfResponse]), $row[$fieldIsConfirmed], $row[$fieldIsDenied], $row[$fieldTitle], $row[$fieldDescription]);
+
+                array_push($tasks, $task);
+            }
+        }
+        return $tasks;
+    }
+
+    private function getUserToUserIds($userId) {
+        $tableUserToUser = "user_to_user";
+        $fieldId = "id";
+        $fieldChildUserId = "child_user_id";
+        $fieldParentUserId = "parent_user_id";
+
+        $statement = $this->connection->prepare("
+                        SELECT $fieldId
+                        FROM $tableUserToUser
+                        WHERE $fieldChildUserId = :child_user_id OR $fieldParentUserId = :parent_user_id");
+        $statement->bindParam(':child_user_id', $userId, PDO::PARAM_STR);
+        $statement->bindParam(':parent_user_id', $userId, PDO::PARAM_STR);
+        $statement->execute();
+
+        $userToUserIds = $statement->fetchAll(PDO::FETCH_COLUMN);
+
+        return $userToUserIds;
+    }
+
+    public function getAdminUserEntitiesByUserId($userId) {
+        $tableUserToUser = "user_to_user";
+        $fieldChildUserId = "child_user_id";
+        $fieldParentUserId = "parent_user_id";
+        $tableUser = "user";
+        $fieldName = "name";
+        $fieldId = "id";
+        $aliasChildsName = "childs_name";
+        $aliasParentsName = "parents_name";
+        $aliasTableChild = "table_child";
+        $aliasTableParent = "table_parent";
+        $aliasChildId = "child_id";
+        $aliasParentId = "parent_id";
+
+        $userToUserIds = $this->getUserToUserIds($userId);
+
+        $adminToUserEntities = array();
+
+        foreach ($userToUserIds as $userToUserId) {
+            $statement = $this->connection->prepare("
+                SELECT $tableUserToUser.$fieldChildUserId AS $aliasChildId,
+                  $tableUserToUser.$fieldParentUserId AS $aliasParentId,
+                  $aliasTableChild.$fieldName AS $aliasChildsName,
+                  $aliasTableParent.$fieldName AS $aliasParentsName
+                FROM $tableUser $aliasTableChild
+                INNER JOIN $tableUserToUser ON $aliasTableChild.$fieldId = $tableUserToUser.$fieldChildUserId
+                INNER JOIN $tableUser $aliasTableParent ON $aliasTableParent.$fieldId = $tableUserToUser.$fieldParentUserId
+                WHERE $tableUserToUser.$fieldId = $userToUserId");
+            $statement->execute();
+            $row = $statement->fetch(PDO::FETCH_ASSOC);
+            $adminToUserEntity = new AdminUserEntity($userToUserId, $row[$aliasChildId], $row[$aliasParentId], $row[$aliasChildsName], $row[$aliasParentsName]);
+
+            array_push($adminToUserEntities, $adminToUserEntity);
+        }
+
+        return $adminToUserEntities;
+
+    }
 }

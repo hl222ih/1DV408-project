@@ -31,15 +31,40 @@ class Model {
     private static $sessionLastRegisterAdminAccountChecked = "Model:LastPostedRegisterAdminAccountChecked";
 
     private $user;
+    private $adminUserEntities;
+    private $units;
+    private $tasks;
+    private $transactions;
 
     public function __construct() {
         $this->dao = new Dao();
         $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
         if ($this->isUserLoggedIn()) {
-            if (!$this->isSessionIntegrityOk())
+            if (!$this->isSessionIntegrityOk()) {
                 $this->logoutUser();
-            else
+            } else {
                 $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
+                $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
+
+                //$this->mappedUsers = $this->dao->getMappedUsersByUserId($this->user->getId());
+                //tasksview
+                //vill ha alla tasks för adminUserEntityIds.
+                //så... om map=all är valt:
+                //hämta alla tasks för user-to-userIds som matchar alla mappedUserIds;
+                //om map=<visst username> är valt:
+                //hämta endast tasks för user-to-userids som matchar mappedUserId
+                //page=<pagename>
+                //unit=<unitId> (none = all)
+                //aue=<adminUserEntity> (none = all)
+                //
+
+                //$this->adminUserEntities = $this->dao->
+                //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
+                $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
+
+                //TODO: transactions too
+                //$this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
+            }
         }
     }
 
@@ -256,5 +281,58 @@ class Model {
         }
 
         return $isSuccess;
+    }
+
+    public function getEvents() {
+        $events = array();
+
+        if ($this->user->getIsAdmin()) {
+            //same as tasks for now
+            //TODO: merge transactions too
+            $events = $this->tasks;
+            //$events = array_merge($this->tasks, $this->transactions);
+        }
+
+        //TODO: sorting should be done.
+        return $events;
+    }
+
+    public function getPendingEvents() {
+        $events = $this->getEvents();
+
+        $pendingEvents = array_filter($events, function($event) {
+            return $event->getIsPending();
+        });
+
+        //TODO: to be pending they need to be requested too.
+        //for tasks, they need to be requested within valid timeframe.
+
+        return $pendingEvents;
+    }
+
+    public function getParentsName($adminUserEntityId) {
+
+        $aue = array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {
+            return $aue->getId() == $adminUserEntityId;
+        })[0];
+
+        $parentsName = "name not found";
+        if ($aue) {
+            $parentsName = $aue->getAdminsName();
+        }
+        return $parentsName;
+    }
+
+    public function getChildsName($adminUserEntityId) {
+
+        $aue = array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {
+            return $aue->getId() == $adminUserEntityId;
+        })[0];
+
+        $childsName = "name not found";
+        if ($aue) {
+            $childsName = $aue->getUsersName();
+        }
+        return $childsName;
     }
 }
