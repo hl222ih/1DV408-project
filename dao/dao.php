@@ -5,6 +5,7 @@ namespace BoostMyAllowanceApp\Model\Dao;
 use PDO;
 use BoostMyAllowanceApp\Model\User;
 use BoostMyAllowanceApp\Model\Task;
+use BoostMyAllowanceApp\Model\Transaction;
 use BoostMyAllowanceApp\Model\AdminUserEntity;
 
 require_once("database-config.php");
@@ -244,9 +245,7 @@ class Dao {
             $statement->bindParam(':user_to_user_id', $userToUserId, PDO::PARAM_STR);
             $statement->execute();
 
-            $row = $statement->fetch(PDO::FETCH_ASSOC);
-
-            if ($row) {
+            while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
                 $task = new Task($row[$fieldId], $row[$fieldUserToUserId], $row[$fieldUnitId], strtotime($row[$fieldValidFrom]),
                     strtotime($row[$fieldValidTo]), $row[$fieldRewardValue], $row[$fieldPenaltyValue], strtotime($row[$fieldTimeOfRequest]),
                     strtotime($row[$fieldTimeOfResponse]), $row[$fieldIsConfirmed], $row[$fieldIsDenied], $row[$fieldTitle], $row[$fieldDescription]);
@@ -314,4 +313,40 @@ class Dao {
         return $adminToUserEntities;
 
     }
+
+    public function getTransactionsByUserId($userId) {
+        $tableTransaction = "transaction";
+        $fieldUserToUserId = "user_to_user_id";
+
+        $fieldId = "id";
+        $fieldUnitId = "unit_id";
+        $fieldTransactionValue = "transaction_value";
+        $fieldTimeOfRequest = "time_of_request";
+        $fieldTimeOfResponse = "time_of_response";
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+        $fieldDescription = "description";
+
+        $userToUserIds = $this->getUserToUserIds($userId);
+
+        $transactions = array();
+
+        foreach($userToUserIds as $userToUserId) {
+            $statement = $this->connection->prepare("
+                        SELECT *
+                        FROM $tableTransaction
+                        WHERE $fieldUserToUserId = :user_to_user_id");
+            $statement->bindParam(':user_to_user_id', $userToUserId, PDO::PARAM_STR);
+            $statement->execute();
+
+            while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+                $transaction = new Transaction($row[$fieldId], $row[$fieldUserToUserId], $row[$fieldUnitId], strtotime($row[$fieldTimeOfRequest]),
+                    strtotime($row[$fieldTimeOfResponse]), $row[$fieldIsConfirmed], $row[$fieldIsDenied], $row[$fieldDescription], $row[$fieldTransactionValue]);
+
+                array_push($transactions, $transaction);
+            }
+        }
+        return $transactions;
+    }
+
 }

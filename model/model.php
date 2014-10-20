@@ -61,9 +61,7 @@ class Model {
                 //$this->adminUserEntities = $this->dao->
                 //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
                 $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
-
-                //TODO: transactions too
-                //$this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
+                $this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
             }
         }
     }
@@ -289,8 +287,8 @@ class Model {
         if ($this->user->getIsAdmin()) {
             //same as tasks for now
             //TODO: merge transactions too
-            $events = $this->tasks;
-            //$events = array_merge($this->tasks, $this->transactions);
+            //$events = $this->tasks;
+            $events = array_merge($this->tasks, $this->transactions);
         }
 
         //TODO: sorting should be done.
@@ -303,9 +301,6 @@ class Model {
         $pendingEvents = array_filter($events, function($event) {
             return $event->getIsPending();
         });
-
-        //TODO: to be pending they need to be requested too.
-        //for tasks, they need to be requested within valid timeframe.
 
         return $pendingEvents;
     }

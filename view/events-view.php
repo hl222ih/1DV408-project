@@ -28,14 +28,13 @@ class EventsView extends View {
         $html = '
 <div class="panel panel-info">
     <div class="panel-heading">
-    <div>
-        <h3 class="panel-title">' . (($this->showOnlyPendingEvents) ? 'Avvaktande u' : 'U') . 'ppgifter och överföringar&nbsp;&nbsp;&nbsp;' .
-                (($this->showOnlyPendingEvents) ?
-                '<a href="?page=' . EventsView::getPageName() . '&onlypending=0"><input type="button" class="btn btn-info btn-sm" value="Visa alla" /></a>' :
-                '<a href="?page=' . EventsView::getPageName() . '&onlypending=1"><button type="button" class="btn btn-info btn-sm">Visa bara avvaktande</button></a>') .'
-        </h3>
+        <div>
+            <h3 class="panel-title">' . (($this->showOnlyPendingEvents) ? 'Avvaktande u' : 'U') . 'ppgifter och överföringar&nbsp;&nbsp;&nbsp;' .
+                    (($this->showOnlyPendingEvents) ?
+                    '<a href="?page=' . EventsView::getPageName() . '&' . self::$getIsPendingKey . '=0"><input type="button" class="btn btn-info btn-sm" value="Visa alla" /></a>' :
+                    '<a href="?page=' . EventsView::getPageName() . '&' . self::$getIsPendingKey . '=1"><button type="button" class="btn btn-info btn-sm">Visa bara avvaktande</button></a>') .'
+            </h3>
         </div>
-
     </div>
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
@@ -73,13 +72,21 @@ class EventsView extends View {
                         $event->getTitle() . '</h4>
                 <p><span class="label label-info">' .
                 $this->model->getChildsName($event->getAdminUserEntityId())
-                . '</span>'.
-                (($event->getClassName() == Task::getClassName()) ?
-                    '<span class="label label-info">
+                . '</span>' .
+                (($event->getClassName() == Task::getClassName()) ? '
+                    <span class="label label-info">
                     Giltig: 2014-02-24 20:30 - 2014-02-25 20:30</span>' : '') .
-                '<span class="label label-info">' .
-                ($event->getIsRequested() ? 'Utförd: ' . $this->formatTimestamp($event->getTimeOfRequest()) : 'Ej utförd')
-                . '</span></p>
+                (($event->getClassName() == Task::getClassName()) ?
+                    ' <span class="label label-info">' .
+                    (($event->getIsRequested()) ?
+                        'Utförd: ' . $this->formatTimestamp($event->getTimeOfRequest())
+                        : 'Ej utförd') . '</span>' : '') .
+                (($event->getClassName() == Transaction::getClassName()) ?
+                    ' <span class="label label-info">' .
+                    (($event->getHasResponse() && $event->getIsConfirmed()) ?
+                        'Överföringen gjordes: ' . $this->formatTimestamp($event->getTimeOfResponse())
+                        : 'Förfrågan gjordes: ' . $this->formatTimestamp($event->getTimeOfRequest())) . '</span>' : '') . '
+                </p>
                 <p class="list-group-item-text">
                     <span class="label label-' . (($event->getIsConfirmed()) ? 'success' : (($event->getIsDenied()) ? 'danger' : (($event->getIsPending()) ? 'warning' : 'info'))) . ' pull-left">' .
                         $event->getStatusText()

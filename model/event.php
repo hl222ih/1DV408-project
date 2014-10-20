@@ -68,6 +68,14 @@ class Event {
         return $this->timeOfRequest;
     }
 
+    public function getTimeOfResponse() {
+        return $this->timeOfResponse;
+    }
+
+    public function getHasResponse() {
+        return ($this->timeOfResponse != null);
+    }
+
     public function getIsRequested() {
         return ($this->timeOfRequest != null);
     }
