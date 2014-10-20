@@ -28,4 +28,9 @@ class Task extends Event {
             $this->getIsRequested() &&
             $this->timeOfRequest < $this->validTo;
     }
+
+    public function getIsUpcoming() {
+        //TODO: to be upcoming task cannot already be requested
+        return $this->validTo > time();
+    }
 }

@@ -46,20 +46,11 @@ class Model {
                 $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
                 $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
 
-                //$this->mappedUsers = $this->dao->getMappedUsersByUserId($this->user->getId());
-                //tasksview
-                //vill ha alla tasks för adminUserEntityIds.
-                //så... om map=all är valt:
-                //hämta alla tasks för user-to-userIds som matchar alla mappedUserIds;
-                //om map=<visst username> är valt:
-                //hämta endast tasks för user-to-userids som matchar mappedUserId
-                //page=<pagename>
                 //unit=<unitId> (none = all)
                 //aue=<adminUserEntity> (none = all)
-                //
 
-                //$this->adminUserEntities = $this->dao->
                 //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
+                //TODO: borde bara hämta innehåll som är väsentligt för vyn
                 $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
                 $this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
             }
@@ -285,9 +276,6 @@ class Model {
         $events = array();
 
         if ($this->user->getIsAdmin()) {
-            //same as tasks for now
-            //TODO: merge transactions too
-            //$events = $this->tasks;
             $events = array_merge($this->tasks, $this->transactions);
         }
 
@@ -305,6 +293,17 @@ class Model {
         return $pendingEvents;
     }
 
+    public function getTasks() {
+        return $this->tasks;
+    }
+
+    public function getUpcomingTasks() {
+        $upcomingTasks = array_filter($this->tasks, function($task) {
+            return $task->getIsUpcoming();
+        });
+
+        return $upcomingTasks;
+    }
     public function getParentsName($adminUserEntityId) {
 
         $aue = array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {
