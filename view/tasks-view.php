@@ -38,7 +38,7 @@ class TasksView extends View {
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
             <div class="list-group">' .
-            $this->getHtmlForTaskLines() . '
+            $this->getHtmlForTaskItems() . '
             </div>
         </form>
     </div>
@@ -47,45 +47,23 @@ class TasksView extends View {
         return parent::getSurroundingHtml($html);
     }
 
-    private function getHtmlForTaskLines() {
+    private function getHtmlForTaskItems() {
         $html = "";
 
         foreach($this->tasks as $task) {
             $html .= '
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading"> ' .
-                    (($this->model->isUserAdmin()) ? '
-                        <input type="submit"
-                            class="btn btn-danger pull-right"
-                            name="' . self::$postRemoveTaskButtonNameKey . '"
-                            value="Radera" />' : '') .
-                    (($this->model->isUserAdmin()) ? '
-                        <input type="submit"
-                            class="btn btn-info pull-right"
-                            name="' . self::$postEditTaskButtonNameKey . '"
-                            value="Redigera" />' : '') .
-                    (($task->getIsPending() && $this->model->isUserAdmin()) ? '
-                        <input type="submit"
-                            class="btn btn-success pull-right"
-                            name="' . self::$postConfirmTaskDoneButtonNameKey . '"
-                            value="Godkänn" />' : '') .
-                    ((!$task->getIsRequested()) ? '
-                        <input type="submit"
-                            class="btn btn-success pull-right"
-                            name="' . self::$postMarkTaskDoneButtonNameKey . '"
-                            value="Markera som utförd" />' : '') .
-                    (($task->getIsPending()) ? '
-                        <input type="submit"
-                            class="btn btn-danger pull-right"
-                            name="' . self::$postRegretMarkTaskDoneButtonNameKey . '"
-                            value="Markera som ej utförd" />' : '') .
+
+                    $this->getHtmlForEventButtonsOfItems($task) .
+
                     $task->getTitle() .
-                        '<span class="label label-info">' .
-                        $task->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
-                            (($task->getPenaltyValue() != 0) ?
-                                ' (' .  $task->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
-                                '' )
-                        . '</span>' .
+                    '<span class="label label-info">' .
+                    $task->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
+                        (($task->getPenaltyValue() != 0) ?
+                            ' (' .  $task->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
+                            '' )
+                    . '</span>' .
                 '</h4>
                 <p>
                 <span class="label label-info">' .

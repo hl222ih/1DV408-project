@@ -54,30 +54,19 @@ class EventsView extends View {
             $html .= '
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">' .
-                    (($event->getIsPending()) ? '
-                    <input type="submit"
-                        class="btn btn-danger pull-right"
-                        name="' . self::$postDenyEventButtonNameKey . '"
-                        value="Neka" /> ' : '') . '
-                    <input type="submit"
-                        class="btn btn-info pull-right"
-                        name="' . self::$postEditEventButtonNameKey . '"
-                        value="Redigera" />' .
-                    (($event->getIsPending()) ? '
-                        <input type="submit"
-                        class="btn btn-success pull-right"
-                        name="' . self::$postConfirmEventButtonNameKey . '"
-                        value="Godkänn" />' : '') .
-                        $event->getTitle() .
-                            '<span class="label label-info">' .
-                            (($event->getClassName() == Task::getClassName()) ?
-                                $event->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
-                                    (($event->getPenaltyValue() != 0) ?
-                                        ' (' .  $event->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
-                                        '' ) :
-                                        $event->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()) .
-                            '</span>' .
-                        '</h4>
+
+                $this->getHtmlForEventButtonsOfItems($event) .
+
+                $event->getTitle() .
+                    '<span class="label label-info">' .
+                    (($event->getClassName() == Task::getClassName()) ?
+                        $event->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
+                            (($event->getPenaltyValue() != 0) ?
+                                ' (' .  $event->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
+                                '' ) :
+                                $event->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()) .
+                    '</span>' .
+                '</h4>
                 <p><span class="label label-info">' .
                 $this->model->getChildsName($event->getAdminUserEntityId())
                 . '</span>' .

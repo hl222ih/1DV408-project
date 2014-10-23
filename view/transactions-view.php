@@ -26,7 +26,7 @@ class TransactionsView extends View {
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
             <div class="list-group">' .
-            $this->getHtmlForTransactionLines() . '
+            $this->getHtmlForTransactionItems() . '
             </div>
         </form>
     </div>
@@ -34,44 +34,21 @@ class TransactionsView extends View {
         return parent::getSurroundingHtml($html);
     }
 
-    function getHtmlForTransactionLines() {
+    function getHtmlForTransactionItems() {
         $html = "";
-
- /*       protected static $postConfirmTransactionButtonNameKey = "View::ConfirmTransaction";
-        protected static $postEditTransactionButtonNameKey = "View::EditTransaction";
-        protected static $postRegretTransactionButtonNameKey = "View::RegretTransaction";
-        protected static $postRemoveTransactionButtonNameKey = "View::RemoveTransaction";*/
-
 
         foreach($this->transactions as $transaction) {
             $html .= '
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">' .
-                (($this->model->isUserAdmin()) ? '
-                    <input type="submit"
-                        class="btn btn-danger pull-right"
-                        name="' . self::$postConfirmTransactionButtonNameKey . '"
-                        value="Godkänn" />' : '') .
-                (($transaction->getIsPending()) ? '
-                        <input type="submit"
-                            class="btn btn-info pull-right"
-                            name="' . self::$postEditTransactionButtonNameKey . '"
-                            value="Redigera" />' : '') .
-                (($transaction->getIsPending() && !$this->model->isUserAdmin()) ? '
-                        <input type="submit"
-                            class="btn btn-success pull-right"
-                            name="' . self::$postRegretTransactionButtonNameKey . '"
-                            value="Ångra" />' : '') .
-                (($transaction->getIsPending() && $this->model->isUserAdmin()) ? '
-                        <input type="submit"
-                            class="btn btn-success pull-right"
-                            name="' . self::$postRemoveTransactionButtonNameKey . '"
-                            value="Radera" />' : '') .
+
+                $this->getHtmlForEventButtonsOfItems($transaction) .
+
                 $transaction->getTitle() .
                 '<span class="label label-info">' .
                 $transaction->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()
                 . '</span>' .
-                '</h4>.
+                '</h4>
                 <p>
                     <span class="label label-info">' .
                     $this->model->getChildsName($transaction->getAdminUserEntityId())

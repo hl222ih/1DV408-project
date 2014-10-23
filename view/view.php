@@ -4,6 +4,9 @@ namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\MessageType;
 use BoostMyAllowanceApp\Model\Model;
+use BoostMyAllowanceApp\Model\Task;
+use BoostMyAllowanceApp\Model\Transaction;
+use BoostMyAllowanceApp\Model\Event;
 
 require_once("partials/head.php");
 require_once("partials/footer.php");
@@ -128,5 +131,62 @@ abstract class View extends ViewKeys {
 
     protected function formatTimestamp($timestamp) {
         return date("Y-m-d H:i", $timestamp);
+    }
+
+    protected function getHtmlForEventButtonsOfItems(Event $event) {
+        $html = '';
+
+        if ($event->getClassName() == Task::getClassName()) {
+
+            $html =
+                (($this->model->isUserAdmin()) ? '
+                <input type="submit"
+                    class="btn btn-danger pull-right"
+                    name="' . self::$postRemoveTaskButtonNameKey . '"
+                    value="Radera" />' : '') .
+                (($this->model->isUserAdmin()) ? '
+                <input type="submit"
+                    class="btn btn-info pull-right"
+                    name="' . self::$postEditTaskButtonNameKey . '"
+                    value="Redigera" />' : '') .
+                (($event->getIsPending() && $this->model->isUserAdmin()) ? '
+                <input type="submit"
+                    class="btn btn-success pull-right"
+                    name="' . self::$postConfirmTaskDoneButtonNameKey . '"
+                    value="Godkänn" />' : '') .
+                ((!$event->getIsRequested()) ? '
+                <input type="submit"
+                    class="btn btn-success pull-right"
+                    name="' . self::$postMarkTaskDoneButtonNameKey . '"
+                    value="Markera som utförd" />' : '') .
+                (($event->getIsPending()) ? '
+                <input type="submit"
+                    class="btn btn-danger pull-right"
+                    name="' . self::$postRegretMarkTaskDoneButtonNameKey . '"
+                    value="Markera som ej utförd" />' : '');
+        } else if ($event->getClassName() == Transaction::getClassName()) {
+            $html =
+                (($this->model->isUserAdmin()) ? '
+                <input type="submit"
+                class="btn btn-danger pull-right"
+                name="' . self::$postConfirmTransactionButtonNameKey . '"
+                value="Godkänn" />' : '') .
+                (($event->getIsPending()) ? '
+                <input type="submit"
+                    class="btn btn-info pull-right"
+                    name="' . self::$postEditTransactionButtonNameKey . '"
+                    value="Redigera" />' : '') .
+                (($event->getIsPending() && !$this->model->isUserAdmin()) ? '
+                <input type="submit"
+                    class="btn btn-success pull-right"
+                    name="' . self::$postRegretTransactionButtonNameKey . '"
+                    value="Ångra" />' : '') .
+                (($event->getIsPending() && $this->model->isUserAdmin()) ? '
+                <input type="submit"
+                    class="btn btn-success pull-right"
+                    name="' . self::$postRemoveTransactionButtonNameKey . '"
+                    value="Radera" />' : '');
+        }
+        return $html;
     }
 }
