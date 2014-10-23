@@ -55,8 +55,7 @@ class EventsView extends View {
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">' .
 
-                $this->getHtmlForEventButtonsOfItems($event) .
-
+                $this->getHtmlForEventButtonsOfItem($event) .
                 $event->getTitle() .
                     '<span class="label label-info">' .
                     (($event->getClassName() == Task::getClassName()) ?
@@ -66,32 +65,8 @@ class EventsView extends View {
                                 '' ) :
                                 $event->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()) .
                     '</span>' .
-                '</h4>
-                <p><span class="label label-info">' .
-                    (($this->model->isUserAdmin()) ?
-                    $this->model->getChildsName($event->getAdminUserEntityId()) :
-                    $this->model->getParentsName($event->getAdminUserEntityId())) . '
-                </span>' .
-                (($event->getClassName() == Task::getClassName()) ?
-                    ' <span class="label label-info">' .
-                    'Giltig: 2014-02-24 20:30 - 2014-02-25 20:30</span>' : '') .
-                (($event->getClassName() == Task::getClassName()) ?
-                    ' <span class="label label-info">' .
-                    (($event->getIsRequested()) ?
-                        'Utförd: ' . $this->formatTimestamp($event->getTimeOfRequest())
-                        : 'Ej utförd') . '</span>' : '') .
-                (($event->getClassName() == Transaction::getClassName()) ?
-                    ' <span class="label label-info">' .
-                    (($event->getHasResponse() && $event->getIsConfirmed()) ?
-                        'Överföringen gjordes: ' . $this->formatTimestamp($event->getTimeOfResponse())
-                        : 'Förfrågan gjordes: ' . $this->formatTimestamp($event->getTimeOfRequest())) . '</span>' : '') . '
-                </p>
-                <p class="list-group-item-text">
-                    <span class="label label-' . (($event->getIsConfirmed()) ? 'success' : (($event->getIsDenied()) ? 'danger' : (($event->getIsPending()) ? 'warning' : 'info'))) . ' pull-left">' .
-                        $event->getStatusText() . (($event->getIsConfirmed() || $event->getIsDenied()) ? ': ' . $event->getValue(true) . ' ' . $this->model->getUnit()->getShortName() : '')
-                    . '</span>&nbsp;<span>
-                    ' . $event->getDescription() . '</span>
-                </p>
+                '</h4>' .
+                $this->getHtmlForEventLabelsOfItem($event) . '
             </a>
             ';
         }

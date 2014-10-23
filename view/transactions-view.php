@@ -42,36 +42,14 @@ class TransactionsView extends View {
             <a href="#" class="list-group-item">
                 <h4 class="list-group-item-heading">' .
 
-                $this->getHtmlForEventButtonsOfItems($transaction) .
+                $this->getHtmlForEventButtonsOfItem($transaction) .
 
                 $transaction->getTitle() .
                 '<span class="label label-info">' .
                 $transaction->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()
                 . '</span>' . '
-                </h4>
-                <p>
-                    <span class="label label-info">' .
-                        (($this->model->isUserAdmin()) ?
-                            $this->model->getChildsName($transaction->getAdminUserEntityId()) :
-                            $this->model->getParentsName($transaction->getAdminUserEntityId())) . '
-                    </span>' . '
-                    <span class="label label-info">' .
-                        (($transaction->getIsRequested()) ?
-                            'Utförd: ' . $this->formatTimestamp($transaction->getTimeOfRequest())
-                            : 'Ej utförd') . '
-                    </span>' . '
-                    <span class="label label-info">' .
-                        (($transaction->getHasResponse() && $transaction->getIsConfirmed()) ?
-                            'Överföringen gjordes: ' . $this->formatTimestamp($transaction->getTimeOfResponse()) :
-                            'Förfrågan gjordes: ' . $this->formatTimestamp($transaction->getTimeOfRequest())) . '
-                    </span>' . '
-                </p>
-                <p class="list-group-item-text">
-                    <span class="label label-' . (($transaction->getIsConfirmed()) ? 'success' : (($transaction->getIsDenied()) ? 'danger' : (($transaction->getIsPending()) ? 'warning' : 'info'))) . ' pull-left">' .
-                $transaction->getStatusText() . (($transaction->getIsConfirmed() || $transaction->getIsDenied()) ? ': ' . $transaction->getValue($this->model->isUserAdmin()) . ' ' . $this->model->getUnit()->getShortName() : '') . '
-                </span>&nbsp;<span>
-                    ' . $transaction->getDescription() . '</span>
-                </p>
+                </h4>' .
+                $this->getHtmlForEventLabelsOfItem($transaction) . '
             </a>
             ';
         }

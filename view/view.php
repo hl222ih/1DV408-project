@@ -133,7 +133,7 @@ abstract class View extends ViewKeys {
         return date("Y-m-d H:i", $timestamp);
     }
 
-    protected function getHtmlForEventButtonsOfItems(Event $event) {
+    protected function getHtmlForEventButtonsOfItem(Event $event) {
         $html = '';
 
         if ($event->getClassName() == Task::getClassName()) {
@@ -187,6 +187,54 @@ abstract class View extends ViewKeys {
                     name="' . self::$postRemoveTransactionButtonNameKey . '"
                     value="Radera" />' : '');
         }
+        return $html;
+    }
+
+    protected function getHtmlForEventLabelsOfItem(Event $event) {
+        $html =
+        '<p>
+            <span class="label label-info">' .
+            (($this->model->isUserAdmin()) ?
+                $this->model->getChildsName($event->getAdminUserEntityId()) :
+                $this->model->getParentsName($event->getAdminUserEntityId())) . '
+            </span>';
+        if ($event->getClassName() == Task::getClassName()) {
+            $html .=
+                '<span class="label label-info">
+                    Giltig: 2014-02-24 20:30 - 2014-02-25 20:30
+                </span>
+                <span class="label label-info">';
+            if ($event->getIsRequested()) {
+                $html .= 'Utförd: ' . $this->formatTimestamp($event->getTimeOfRequest());
+
+            } else {
+                $html .= 'Ej utförd';
+            }
+            $html .=
+                '</span>';
+        } else if ($event->getClassName() == Transaction::getClassName()) {
+            $html .=
+            ' <span class="label label-info">';
+            if ($event->getHasResponse() && $event->getIsConfirmed()) {
+                $html .=
+                    'Överföringen gjordes: ' . $this->formatTimestamp($event->getTimeOfResponse());
+
+            } else {
+                $html .=
+                    'Förfrågan gjordes: ' . $this->formatTimestamp($event->getTimeOfRequest());
+            }
+            $html .=
+                '</span>';
+        }
+        $html .=
+        '</p>
+        <p class="list-group-item-text">
+            <span class="label label-' . (($event->getIsConfirmed()) ? 'success' : (($event->getIsDenied()) ? 'danger' : (($event->getIsPending()) ? 'warning' : 'info'))) . ' pull-left">' .
+        $event->getStatusText() . (($event->getIsConfirmed() || $event->getIsDenied()) ? ': ' . $event->getValue(true) . ' ' . $this->model->getUnit()->getShortName() : '')
+        . '</span>&nbsp;<span>' .
+        $event->getDescription() . '</span>
+        </p>';
+
         return $html;
     }
 }

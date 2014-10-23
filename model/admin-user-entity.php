@@ -30,6 +30,7 @@ class AdminUserEntity {
     public function getUsersName() {
         return $this->usersName;
     }
+
     public function getAdminsName() {
         return $this->adminsName;
     }
