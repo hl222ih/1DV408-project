@@ -68,8 +68,10 @@ class EventsView extends View {
                     '</span>' .
                 '</h4>
                 <p><span class="label label-info">' .
-                $this->model->getChildsName($event->getAdminUserEntityId())
-                . '</span>' .
+                    (($this->model->isUserAdmin()) ?
+                    $this->model->getChildsName($event->getAdminUserEntityId()) :
+                    $this->model->getParentsName($event->getAdminUserEntityId())) . '
+                </span>' .
                 (($event->getClassName() == Task::getClassName()) ?
                     ' <span class="label label-info">' .
                     'Giltig: 2014-02-24 20:30 - 2014-02-25 20:30</span>' : '') .

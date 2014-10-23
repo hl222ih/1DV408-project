@@ -66,8 +66,10 @@ class TasksView extends View {
                     . '</span>' .
                 '</h4>
                 <p>
-                <span class="label label-info">' .
-                        $this->model->getChildsName($task->getAdminUserEntityId()) . '
+                    <span class="label label-info">' .
+                        (($this->model->isUserAdmin()) ?
+                        $this->model->getChildsName($task->getAdminUserEntityId()) :
+                        $this->model->getParentsName($task->getAdminUserEntityId())) . '
                     </span>
                     <span class="label label-info">
                         Giltig: 2014-02-24 20:30 - 2014-02-25 20:30
