@@ -305,6 +305,11 @@ class Model {
 
         return $upcomingTasks;
     }
+
+    public function getTransactions() {
+        return $this->transactions;
+    }
+
     public function getParentsName($adminUserEntityId) {
 
         $aue = array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {

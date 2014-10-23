@@ -20,10 +20,11 @@ class Navigation {
     <div class="navbar navbar-default">
         <span class="label label-info pull-right">' . ($this->model->isUserLoggedIn() ?
             'Inloggad som ' . $this->model->getUsersName() . ' ' :
-            'Ej inloggad') . '</span>
-        <span class="label label-info pull-right">' . ($this->model->isUserLoggedIn() ?
-            'Saldo: ' . $this->model->getTotalBalance() . ' ' :
-            'Saldo: -') . '</span>
+            'Ej inloggad') . '</span>' .
+        ($this->model->isUserLoggedIn() ?
+            '<span class="label label-info pull-right">' .
+            'Saldo: ' . $this->model->getTotalBalance()  : '') .
+            '</span>
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">

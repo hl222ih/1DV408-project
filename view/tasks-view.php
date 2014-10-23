@@ -58,16 +58,27 @@ class TasksView extends View {
                         <input type="submit"
                             class="btn btn-danger pull-right"
                             name="' . self::$postRemoveTaskButtonNameKey . '"
-                            value="Radera" />
+                            value="Radera" />' : '') .
+                    (($this->model->isUserAdmin()) ? '
                         <input type="submit"
                             class="btn btn-info pull-right"
                             name="' . self::$postEditTaskButtonNameKey . '"
                             value="Redigera" />' : '') .
+                    (($task->getIsPending() && $this->model->isUserAdmin()) ? '
+                        <input type="submit"
+                            class="btn btn-success pull-right"
+                            name="' . self::$postConfirmTaskDoneButtonNameKey . '"
+                            value="Godkänn" />' : '') .
                     ((!$task->getIsRequested()) ? '
                         <input type="submit"
                             class="btn btn-success pull-right"
-                            name="' . self::$postDoTaskButtonNameKey . '"
-                            value="Ange som utförd" />' : '') .
+                            name="' . self::$postMarkTaskDoneButtonNameKey . '"
+                            value="Markera som utförd" />' : '') .
+                    (($task->getIsPending()) ? '
+                        <input type="submit"
+                            class="btn btn-danger pull-right"
+                            name="' . self::$postRegretMarkTaskDoneButtonNameKey . '"
+                            value="Markera som ej utförd" />' : '') .
                     $task->getTitle() .
                         '<span class="label label-info">' .
                         $task->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
@@ -95,8 +106,7 @@ class TasksView extends View {
                 . '</span>&nbsp;<span>
                     ' . $task->getDescription() . '</span>
                 </p>
-            </a>
-            ';
+            </a>';
         }
         unset($task);
 

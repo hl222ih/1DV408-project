@@ -12,7 +12,19 @@ class ViewKeys {
     protected static $postAutoLoginCheckedKey = "View::AutoLoginChecked";
     protected static $postPasswordAgainKey = "View::PasswordAgain";
     protected static $postAdminAccountCheckedKey = "View::AdminAccountChecked";
-    protected static $postDoTaskButtonNameKey = "View::DoTask";
+
+    protected static $postConfirmTaskDoneButtonNameKey = "View::ConfirmTaskDone";
     protected static $postEditTaskButtonNameKey = "View::EditTask";
     protected static $postRemoveTaskButtonNameKey = "View::RemoveTask";
+    protected static $postRegretMarkTaskDoneButtonNameKey = "View::RegretMarkTaskDone";
+    protected static $postMarkTaskDoneButtonNameKey = "View::MarkTaskDone";
+
+    protected static $postConfirmTransactionButtonNameKey = "View::ConfirmTransaction";
+    protected static $postEditTransactionButtonNameKey = "View::EditTransaction";
+    protected static $postRegretTransactionButtonNameKey = "View::RegretTransaction";
+    protected static $postRemoveTransactionButtonNameKey = "View::RemoveTransaction";
+
+    protected static $postDenyEventButtonNameKey = "View::DenyEvent"; //
+    protected static $postEditEventButtonNameKey = "View::EditEvent";
+    protected static $postConfirmEventButtonNameKey = "View::ConfirmEvent";
 }

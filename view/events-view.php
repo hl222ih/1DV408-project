@@ -8,7 +8,6 @@ use BoostMyAllowanceApp\Model\Transaction;
 
 class EventsView extends View {
 
-    private static $postConfirmEventButtonNameKey = "GodkannEllerNeka";
     private static $getIsPendingKey = "onlypending";
     private $showOnlyPendingEvents;
     private $events;
@@ -58,11 +57,11 @@ class EventsView extends View {
                     (($event->getIsPending()) ? '
                     <input type="submit"
                         class="btn btn-danger pull-right"
-                        name="' . self::$postConfirmEventButtonNameKey . '"
+                        name="' . self::$postDenyEventButtonNameKey . '"
                         value="Neka" /> ' : '') . '
                     <input type="submit"
                         class="btn btn-info pull-right"
-                        name="' . self::$postConfirmEventButtonNameKey . '"
+                        name="' . self::$postEditEventButtonNameKey . '"
                         value="Redigera" />' .
                     (($event->getIsPending()) ? '
                         <input type="submit"
