@@ -12,12 +12,15 @@ class AdminUserEntity {
     private $usersName;
     private $adminsName;
 
-    public function __construct($id, $userId, $adminId, $usersName, $adminsName) {
+    private $balance;
+
+    public function __construct($id, $userId, $adminId, $usersName, $adminsName, $balance = 5) {
         $this->id = $id;
         $this->userId = $userId;
         $this->adminId = $adminId;
         $this->usersName = $usersName;
         $this->adminsName = $adminsName;
+        $this->balance = $balance;
     }
 
     public function getId() {
@@ -29,5 +32,9 @@ class AdminUserEntity {
     }
     public function getAdminsName() {
         return $this->adminsName;
+    }
+
+    public function getBalance() {
+        return $this->balance;
     }
 }

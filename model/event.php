@@ -3,7 +3,7 @@
 namespace BoostMyAllowanceApp\Model;
 
 
-class Event {
+abstract class Event {
 
     protected $id;
     protected $adminUserEntityId;
@@ -83,4 +83,6 @@ class Event {
     public static function getClassName() {
         return get_called_class();
     }
+
+    abstract function getValue($isAdmin);
 }

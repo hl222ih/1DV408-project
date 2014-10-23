@@ -17,4 +17,21 @@ class Transaction extends Event {
     public function getIsPending() {
         return !$this->isDenied && !$this->isConfirmed && $this->timeOfRequest;
     }
+
+    public function getTransactionValue() {
+        return $this->transactionValue;
+    }
+
+    public function getValue($isAdmin) {
+        $value = 0;
+
+        if ($this->getIsConfirmed()) {
+            $value = $this->transactionValue;
+        }
+
+        if ($isAdmin) {
+            $value = -$value;
+        }
+        return $value;
+    }
 }

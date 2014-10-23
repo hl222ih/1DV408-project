@@ -69,13 +69,22 @@ class EventsView extends View {
                         class="btn btn-success pull-right"
                         name="' . self::$postConfirmEventButtonNameKey . '"
                         value="Godkänn" />' : '') .
-                        $event->getTitle() . '</h4>
+                        $event->getTitle() .
+                            '<span class="label label-info">' .
+                            (($event->getClassName() == Task::getClassName()) ?
+                                $event->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
+                                    (($event->getPenaltyValue() != 0) ?
+                                        ' (' .  $event->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
+                                        '' ) :
+                                        $event->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()) .
+                            '</span>' .
+                        '</h4>
                 <p><span class="label label-info">' .
                 $this->model->getChildsName($event->getAdminUserEntityId())
                 . '</span>' .
-                (($event->getClassName() == Task::getClassName()) ? '
-                    <span class="label label-info">
-                    Giltig: 2014-02-24 20:30 - 2014-02-25 20:30</span>' : '') .
+                (($event->getClassName() == Task::getClassName()) ?
+                    ' <span class="label label-info">' .
+                    'Giltig: 2014-02-24 20:30 - 2014-02-25 20:30</span>' : '') .
                 (($event->getClassName() == Task::getClassName()) ?
                     ' <span class="label label-info">' .
                     (($event->getIsRequested()) ?
@@ -89,7 +98,7 @@ class EventsView extends View {
                 </p>
                 <p class="list-group-item-text">
                     <span class="label label-' . (($event->getIsConfirmed()) ? 'success' : (($event->getIsDenied()) ? 'danger' : (($event->getIsPending()) ? 'warning' : 'info'))) . ' pull-left">' .
-                        $event->getStatusText()
+                        $event->getStatusText() . (($event->getIsConfirmed() || $event->getIsDenied()) ? ': ' . $event->getValue(true) . ' ' . $this->model->getUnit()->getShortName() : '')
                     . '</span>&nbsp;<span>
                     ' . $event->getDescription() . '</span>
                 </p>

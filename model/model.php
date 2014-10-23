@@ -32,7 +32,7 @@ class Model {
 
     private $user;
     private $adminUserEntities;
-    private $units;
+    private $unit;
     private $tasks;
     private $transactions;
 
@@ -43,6 +43,7 @@ class Model {
             if (!$this->isSessionIntegrityOk()) {
                 $this->logoutUser();
             } else {
+                $this->unit = new Unit("krona", "kronor", "kr");
                 $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
                 $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
 
@@ -328,5 +329,21 @@ class Model {
             $childsName = $aue->getUsersName();
         }
         return $childsName;
+    }
+
+    public function getTotalBalance() {
+        $totalBalance = array_reduce($this->adminUserEntities, function($sum, $aue) {
+            $sum += $aue->getBalance();
+            return $sum;
+        });
+
+        if ($this->user->getIsAdmin()) {
+            $totalBalance = -$totalBalance;
+        }
+        return $totalBalance . " " . $this->unit->getShortName();
+    }
+
+    public function getUnit() {
+        return $this->unit;
     }
 }

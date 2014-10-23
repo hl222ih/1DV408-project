@@ -68,10 +68,16 @@ class TasksView extends View {
                             class="btn btn-success pull-right"
                             name="' . self::$postDoTaskButtonNameKey . '"
                             value="Ange som utförd" />' : '') .
-                    $task->getTitle() . '
-                </h4>
+                    $task->getTitle() .
+                        '<span class="label label-info">' .
+                        $task->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
+                            (($task->getPenaltyValue() != 0) ?
+                                ' (' .  $task->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
+                                '' )
+                        . '</span>' .
+                '</h4>
                 <p>
-                    <span class="label label-info">' .
+                <span class="label label-info">' .
                         $this->model->getChildsName($task->getAdminUserEntityId()) . '
                     </span>
                     <span class="label label-info">
