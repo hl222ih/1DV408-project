@@ -36,7 +36,7 @@ class EventsView extends View {
         </div>
     </div>
     <div class="panel-body">
-        <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        <form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">
             <div class="list-group">' .
                 $this->getHtmlForEventItems() . '
             </div>
@@ -59,11 +59,11 @@ class EventsView extends View {
                 $event->getTitle() .
                     '<span class="label label-info">' .
                     (($event->getClassName() == Task::getClassName()) ?
-                        $event->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
-                            (($event->getPenaltyValue() != 0) ?
-                                ' (' .  $event->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
+                        $event->getRewardValue(true) . ' ' . $this->model->getUnit()->getShortName() .
+                            (($event->getPenaltyValue(true) != 0) ?
+                                ' (' .  $event->getPenaltyValue(true) . ' ' . $this->model->getUnit()->getShortName() . ')'  :
                                 '' ) :
-                                $event->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()) .
+                                $event->getTransactionValue(true) . ' ' . $this->model->getUnit()->getShortName()) .
                     '</span>' .
                 '</h4>' .
                 $this->getHtmlForEventLabelsOfItem($event) . '

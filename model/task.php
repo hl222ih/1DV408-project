@@ -35,12 +35,20 @@ class Task extends Event {
     }
 
 
-    public function getRewardValue() {
-        return $this->rewardValue;
+    public function getRewardValue($isAdmin) {
+        $value = $this->rewardValue;
+        if ($isAdmin) {
+            $value = -$value;
+        }
+        return $value;
     }
 
-    public function getPenaltyValue() {
-        return $this->penaltyValue;
+    public function getPenaltyValue($isAdmin) {
+        $value = $this->penaltyValue;
+        if ($isAdmin) {
+            $value = -$value;
+        }
+        return $value;
     }
 
     public function getValue($isAdmin) {

@@ -26,8 +26,4 @@ class ViewKeys {
     protected static $postEditTransactionButtonNameKey = "View::EditTransaction";
     protected static $postRegretTransactionButtonNameKey = "View::RegretTransaction";
     protected static $postRemoveTransactionButtonNameKey = "View::RemoveTransaction";
-
-    protected static $postDenyEventButtonNameKey = "View::DenyEvent"; //
-    protected static $postEditEventButtonNameKey = "View::EditEvent";
-    protected static $postConfirmEventButtonNameKey = "View::ConfirmEvent";
 }

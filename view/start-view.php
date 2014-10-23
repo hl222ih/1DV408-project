@@ -4,7 +4,7 @@ namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\Model;
 
-class GenericView extends ViewKeys {
+class StartView extends ViewKeys {
     static private $cookieEncryptedPasswordKey = "View::EncryptedPassword";
     static private $cookieUsernameKey = "View::Username";
     static private $getPageKey = "page";
@@ -18,6 +18,7 @@ class GenericView extends ViewKeys {
     private $passwordAgain;
     private $name;
     private $createAdminAccount;
+    private $eventId;
 
     public function __construct(Model $model) {
         $this->model = $model;
@@ -95,4 +96,63 @@ class GenericView extends ViewKeys {
         return $this->passwordAgain;
     }
 
+    public function getEventId() {
+        $postEventButtonNameKeys = [
+            self::$postConfirmTaskDoneButtonNameKey,
+            self::$postEditTaskButtonNameKey,
+            self::$postRemoveTaskButtonNameKey,
+            self::$postRegretMarkTaskDoneButtonNameKey,
+            self::$postMarkTaskDoneButtonNameKey,
+            self::$postConfirmTransactionButtonNameKey,
+            self::$postEditTransactionButtonNameKey,
+            self::$postRegretTransactionButtonNameKey,
+            self::$postRemoveTransactionButtonNameKey
+        ];
+
+        $eventId = false;
+        $count = 0;
+        $numberOfKeys = array_count_values($postEventButtonNameKeys);
+        while (!$eventId && $count < $numberOfKeys) {
+            $eventId = (isset($_POST[$postEventButtonNameKeys[$count]])) ? $_POST[$postEventButtonNameKeys[$count]] : false;
+            $count++;
+        }
+
+        return $eventId;
+    }
+
+    public function wasConfirmTaskDoneButtonClicked() {
+        return isset($_POST[self::$postConfirmTaskDoneButtonNameKey]);
+    }
+
+    public function wasEditTaskButtonClicked() {
+        return isset($_POST[self::$postEditTaskButtonNameKey]);
+    }
+
+    public function wasRemoveTaskButtonClicked() {
+        return isset($_POST[self::$postRemoveTaskButtonNameKey]);
+    }
+
+    public function wasRegretMarkTaskDoneButtonClicked() {
+        return isset($_POST[self::$postRegretMarkTaskDoneButtonNameKey]);
+    }
+
+    public function wasMarkTaskDoneButtonClicked() {
+        return isset($_POST[self::$postMarkTaskDoneButtonNameKey]);
+    }
+
+    public function wasConfirmTransactionButtonClicked() {
+        return isset($_POST[self::$postConfirmTransactionButtonNameKey]);
+    }
+
+    public function wasEditTransactionButtonClicked() {
+        return isset($_POST[self::$postEditTransactionButtonNameKey]);
+    }
+
+    public function wasRegretTransactionButtonClicked() {
+        return isset($_POST[self::$postRegretTransactionButtonNameKey]);
+    }
+
+    public function wasRemoveTransactionButtonClicked() {
+        return isset($_POST[self::$postRemoveTransactionButtonNameKey]);
+    }
 }

@@ -37,7 +37,7 @@ class TasksView extends View {
         </div>
     </div>
     <div class="panel-body">
-        <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        <form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">
             <div class="list-group">' .
             $this->getHtmlForTaskItems() . '
             </div>
@@ -59,9 +59,9 @@ class TasksView extends View {
                     $this->getHtmlForEventButtonsOfItem($task) .
                     $task->getTitle() .
                     '<span class="label label-info">' .
-                    $task->getRewardValue() . ' ' . $this->model->getUnit()->getShortName() .
-                        (($task->getPenaltyValue() != 0) ?
-                            ' (' .  $task->getPenaltyValue() . ' ' . $this->model->getUnit()->getShortName() . ')'  :
+                    $task->getRewardValue($this->model->isUserAdmin()) . ' ' . $this->model->getUnit()->getShortName() .
+                        (($task->getPenaltyValue($this->model->isUserAdmin()) != 0) ?
+                            ' (' .  $task->getPenaltyValue($this->model->isUserAdmin()) . ' ' . $this->model->getUnit()->getShortName() . ')'  :
                             '' )
                     . '</span>' .
                 '</h4>' .

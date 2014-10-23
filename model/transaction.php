@@ -18,8 +18,12 @@ class Transaction extends Event {
         return !$this->isDenied && !$this->isConfirmed && $this->timeOfRequest;
     }
 
-    public function getTransactionValue() {
-        return $this->transactionValue;
+    public function getTransactionValue($isAdmin) {
+        $value = $this->transactionValue;
+        if ($isAdmin) {
+            $value = -$value;
+        }
+        return $value;
     }
 
     public function getValue($isAdmin) {

@@ -25,7 +25,7 @@ class TransactionsView extends View {
         </div>
     </div>
     <div class="panel-body">
-        <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+        <form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">
             <input type="hidden" name="' . $_POST[self::$postEventTypeKey] . '" value="' . Transaction::getClassName() . '" />
             <div class="list-group">' .
             $this->getHtmlForTransactionItems() . '
@@ -48,7 +48,7 @@ class TransactionsView extends View {
 
                 $transaction->getTitle() .
                 '<span class="label label-info">' .
-                $transaction->getTransactionValue() . ' ' . $this->model->getUnit()->getShortName()
+                $transaction->getTransactionValue($this->model->isUserAdmin()) . ' ' . $this->model->getUnit()->getShortName()
                 . '</span>' . '
                 </h4>' .
                 $this->getHtmlForEventLabelsOfItem($transaction) . '

@@ -5,7 +5,7 @@ namespace BoostMyAllowanceApp\Controller;
 require_once("model/model.php");
 
 require_once("view/view-keys.php");
-require_once("view/generic-view.php");
+require_once("view/start-view.php");
 
 require_once("view/view.php");
 require_once("view/events-view.php");
@@ -17,7 +17,7 @@ require_once("view/tasks-view.php");
 require_once("view/transactions-view.php");
 
 use BoostMyAllowanceApp\Model\Model;
-use BoostMyAllowanceApp\View\GenericView;
+use BoostMyAllowanceApp\View\StartView;
 use BoostMyAllowanceApp\View\View;
 use BoostMyAllowanceApp\View\LoginView;
 use BoostMyAllowanceApp\View\EventsView;
@@ -26,67 +26,95 @@ use BoostMyAllowanceApp\View\LogView;
 use BoostMyAllowanceApp\View\SettingsView;
 use BoostMyAllowanceApp\View\TransactionsView;
 use BoostMyAllowanceApp\View\RegisterView;
+use BoostMyAllowanceApp\View\ViewKeys;
 
 class Controller {
 
     private $model;
-    private $genericView;
+    private $startView;
     private $view;
 
     static private $logoutViewName = "logout"; //not an actual view -> logged out and redirected to login
 
     public function __construct() {
         $this->model = new Model();
-        $this->genericView = new GenericView($this->model);
+        $this->startView = new StartView($this->model);
     }
 
     public function start() {
 
         if (!$this->model->isUserLoggedIn()) {
             $this->model->cookieLogin(
-                $this->genericView->getUsernameFromCookie(),
-                $this->genericView->getEncryptedPasswordFromCookie()
+                $this->startView->getUsernameFromCookie(),
+                $this->startView->getEncryptedPasswordFromCookie()
             );
             if (!$this->model->isUserLoggedIn()) {
-                if ($this->genericView->wasLoginButtonClicked()) {
+                if ($this->startView->wasLoginButtonClicked()) {
                     $this->model->login(
-                        $this->genericView->getUsername(),
-                        $this->genericView->getPassword(),
-                        $this->genericView->wasAutoLoginChecked()
+                        $this->startView->getUsername(),
+                        $this->startView->getPassword(),
+                        $this->startView->wasAutoLoginChecked()
                     );
-                } else if ($this->genericView->wasRegisterButtonClicked()) {
+                } else if ($this->startView->wasRegisterButtonClicked()) {
                     if ($this->model->registerNewUser(
-                        $this->genericView->getUsername(),
-                        $this->genericView->getPassword(),
-                        $this->genericView->getPasswordAgain(),
-                        $this->genericView->getName(),
-                        $this->genericView->wasCreateAdminAccountChecked()
+                        $this->startView->getUsername(),
+                        $this->startView->getPassword(),
+                        $this->startView->getPasswordAgain(),
+                        $this->startView->getName(),
+                        $this->startView->wasCreateAdminAccountChecked()
                     )) {
-                        $this->genericView->redirectPage(LoginView::getPageName());
+                        $this->startView->redirectPage(LoginView::getPageName());
                     } else {
-                        $this->genericView->redirectPage(RegisterView::getPageName());
+                        $this->startView->redirectPage(RegisterView::getPageName());
                     };
                 }
             }
             if ($this->model->isUserLoggedIn()) {
                 $this->loadOrReloadLoggedInDefault();
             } else {
-                $this->genericView->unsetCookies();
+                $this->startView->unsetCookies();
                 $this->model->logoutUser(); //and clean session
-                $requestedPage = $this->genericView->getRequestedPage();
+                $requestedPage = $this->startView->getRequestedPage();
                 $this->model->setRequestedPage($requestedPage);
                 if ($requestedPage == LoginView::getPageName()) {
                     $this->view = new LoginView($this->model);
                 } else if ($requestedPage == RegisterView::getPageName()) {
                     $this->view = new RegisterView($this->model);
                 } else {
-                    $this->genericView->redirectPage(LoginView::getPageName());
+                    $this->startView->redirectPage(LoginView::getPageName());
                 }
             }
         } else {
-            $requestedPage = $this->genericView->getRequestedPage();
+            if ($this->startView->wasConfirmTaskDoneButtonClicked()) {
+                $this->model->ConfirmTaskDone($this->startView->getEventId());
+            }
+            if ($this->startView->wasEditTaskButtonClicked()) {
+                $this->model->EditTask($this->startView->getEventId());
+            }
+            if ($this->startView->wasRemoveTaskButtonClicked()) {
+                $this->model->RemoveTask($this->startView->getEventId());
+            }
+            if ($this->startView->wasRegretMarkTaskDoneButtonClicked()) {
+                $this->model->RegretMarkTaskDone($this->startView->getEventId());
+            }
+            if ($this->startView->wasMarkTaskDoneButtonClicked()) {
+                $this->model->MarkTaskDone($this->startView->getEventId());
+            }
+            if ($this->startView->wasConfirmTransactionButtonClicked()) {
+                $this->model->ConfirmTransaction($this->startView->getEventId());
+            }
+            if ($this->startView->wasEditTransactionButtonClicked()) {
+                $this->model->EditTransaction($this->startView->getEventId());
+            }
+            if ($this->startView->wasRegretTransactionButtonClicked()) {
+                $this->model->RegretTransaction($this->startView->getEventId());
+            }
+            if ($this->startView->wasRemoveTransactionButtonClicked()) {
+                $this->model->RemoveTransaction($this->startView->getEventId());
+            }
+
+            $requestedPage = $this->startView->getRequestedPage();
             $this->model->setRequestedPage($requestedPage);
-            //TODO: validate if user has the rights to view requested page
             switch ($requestedPage) {
                 case TasksView::getPageName():
                     $this->view = new TasksView($this->model);
@@ -115,7 +143,7 @@ class Controller {
                     break;
                 case self::$logoutViewName:
                     $this->model->logoutUser();
-                    $this->genericView->redirectPage(LoginView::getPageName());
+                    $this->startView->redirectPage(LoginView::getPageName());
                     break;
                 default:
                 $this->loadOrReloadLoggedInDefault();
@@ -127,19 +155,19 @@ class Controller {
     }
 
     private function loadOrReloadLoggedInDefault() {
-        $requestedPage = $this->genericView->getRequestedPage();
+        $requestedPage = $this->startView->getRequestedPage();
         $this->model->setRequestedPage($requestedPage);
         if ($this->model->isUserAdmin()) {
             if ($requestedPage == EventsView::getPageName()) {
                 $this->view = new EventsView($this->model);
             } else {
-                $this->genericView->redirectPage(EventsView::getPageName());
+                $this->startView->redirectPage(EventsView::getPageName());
             }
         } else {
             if ($requestedPage == TasksView::getPageName()) {
                 $this->view = new TasksView($this->model);
             } else {
-                $this->genericView->redirectPage(TasksView::getPageName());
+                $this->startView->redirectPage(TasksView::getPageName());
             }
         }
     }
