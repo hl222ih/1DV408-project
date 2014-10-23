@@ -3,6 +3,7 @@
 namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\Model;
+use BoostMyAllowanceApp\Model\Task;
 
 class TasksView extends View {
     private static $getIsUpcomingKey = "onlyupcoming";

@@ -3,10 +3,11 @@
 namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\Model;
+use BoostMyAllowanceApp\Model\Transaction;
 
 class TransactionsView extends View {
 
-    private $transaction;
+    private $transactions;
 
     public function __construct(Model $model) {
         parent::__construct($model, "Transactions");
@@ -25,6 +26,7 @@ class TransactionsView extends View {
     </div>
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
+            <input type="hidden" name="' . $_POST[self::$postEventTypeKey] . '" value="' . Transaction::getClassName() . '" />
             <div class="list-group">' .
             $this->getHtmlForTransactionItems() . '
             </div>

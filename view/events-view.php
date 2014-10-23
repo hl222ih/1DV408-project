@@ -38,7 +38,7 @@ class EventsView extends View {
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'] . '" method="post">
             <div class="list-group">' .
-                $this->getHtmlForEventLines() . '
+                $this->getHtmlForEventItems() . '
             </div>
         </form>
     </div>
@@ -47,7 +47,7 @@ class EventsView extends View {
         return parent::getSurroundingHtml($html);
     }
 
-    private function getHtmlForEventLines() {
+    private function getHtmlForEventItems() {
         $html = "";
 
         foreach($this->events as $event) {

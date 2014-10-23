@@ -13,6 +13,9 @@ class ViewKeys {
     protected static $postPasswordAgainKey = "View::PasswordAgain";
     protected static $postAdminAccountCheckedKey = "View::AdminAccountChecked";
 
+    protected static $postEventIdKey = "View::EventId";
+    protected static $postEventTypeKey = "View::EventType";
+
     protected static $postConfirmTaskDoneButtonNameKey = "View::ConfirmTaskDone";
     protected static $postEditTaskButtonNameKey = "View::EditTask";
     protected static $postRemoveTaskButtonNameKey = "View::RemoveTask";

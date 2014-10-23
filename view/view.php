@@ -140,52 +140,52 @@ abstract class View extends ViewKeys {
 
             $html =
                 (($this->model->isUserAdmin()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-danger pull-right"
                     name="' . self::$postRemoveTaskButtonNameKey . '"
-                    value="Radera" />' : '') .
+                    value="' . $event->getId() . '">Radera</button>' : '') .
                 (($this->model->isUserAdmin()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-info pull-right"
                     name="' . self::$postEditTaskButtonNameKey . '"
-                    value="Redigera" />' : '') .
+                    value="' . $event->getId() . '">Redigera</button>' : '') .
                 (($event->getIsPending() && $this->model->isUserAdmin()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-success pull-right"
                     name="' . self::$postConfirmTaskDoneButtonNameKey . '"
-                    value="Godkänn" />' : '') .
+                    value="' . $event->getId() . '">Godkänn</button>' : '') .
                 ((!$event->getIsRequested()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-success pull-right"
                     name="' . self::$postMarkTaskDoneButtonNameKey . '"
-                    value="Markera som utförd" />' : '') .
+                    value="' . $event->getId() . '">Markera som utförd</button>' : '') .
                 (($event->getIsPending()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-danger pull-right"
                     name="' . self::$postRegretMarkTaskDoneButtonNameKey . '"
-                    value="Markera som ej utförd" />' : '');
+                    value="' . $event->getId() . '">Markera som ej utförd</button>' : '');
         } else if ($event->getClassName() == Transaction::getClassName()) {
             $html =
                 (($this->model->isUserAdmin()) ? '
-                <input type="submit"
+                <button type="submit"
                 class="btn btn-danger pull-right"
                 name="' . self::$postConfirmTransactionButtonNameKey . '"
-                value="Godkänn" />' : '') .
+                value="' . $event->getId() . '">Godkänn</button>' : '') .
                 (($event->getIsPending()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-info pull-right"
                     name="' . self::$postEditTransactionButtonNameKey . '"
-                    value="Redigera" />' : '') .
+                    value="' . $event->getId() . '">Redigera</button>' : '') .
                 (($event->getIsPending() && !$this->model->isUserAdmin()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-success pull-right"
                     name="' . self::$postRegretTransactionButtonNameKey . '"
-                    value="Ångra" />' : '') .
+                    value="' . $event->getId() . '">Ångra</button>' : '') .
                 (($event->getIsPending() && $this->model->isUserAdmin()) ? '
-                <input type="submit"
+                <button type="submit"
                     class="btn btn-success pull-right"
                     name="' . self::$postRemoveTransactionButtonNameKey . '"
-                    value="Radera" />' : '');
+                    value="' . $event->getId() . '">Radera</button>' : '');
         }
         return $html;
     }
