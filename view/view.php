@@ -168,7 +168,7 @@ abstract class View extends ViewKeys {
             $html =
                 (($this->model->isUserAdmin()) ? '
                 <button type="submit"
-                class="btn btn-danger pull-right"
+                class="btn btn-success pull-right"
                 name="' . self::$postConfirmTransactionButtonNameKey . '"
                 value="' . $event->getId() . '">Godkänn</button>' : '') .
                 (($event->getIsPending()) ? '
@@ -178,12 +178,12 @@ abstract class View extends ViewKeys {
                     value="' . $event->getId() . '">Redigera</button>' : '') .
                 (($event->getIsPending() && !$this->model->isUserAdmin()) ? '
                 <button type="submit"
-                    class="btn btn-success pull-right"
+                    class="btn btn-warning pull-right"
                     name="' . self::$postRegretTransactionButtonNameKey . '"
                     value="' . $event->getId() . '">Ångra</button>' : '') .
                 (($event->getIsPending() && $this->model->isUserAdmin()) ? '
                 <button type="submit"
-                    class="btn btn-success pull-right"
+                    class="btn btn-danger pull-right"
                     name="' . self::$postRemoveTransactionButtonNameKey . '"
                     value="' . $event->getId() . '">Radera</button>' : '');
         }
@@ -234,6 +234,180 @@ abstract class View extends ViewKeys {
         . '</span>&nbsp;<span>' .
         $event->getDescription() . '</span>
         </p>';
+
+        return $html;
+    }
+
+    protected function getHtmlForEventEdit() {
+        $isEditTask = isset($_POST[self::$postEditTaskButtonNameKey]);
+        $isNewTask = isset($_POST[self::$postNewTaskButtonNameKey]);
+        $isEditTransaction = isset($_POST[self::$postEditTransactionButtonNameKey]);
+        $isNewTransaction = isset($_POST[self::$postNewTransactionButtonNameKey]);
+
+        if (!$isEditTask && !$isNewTask && !$isEditTransaction && !$isNewTransaction)
+            return '';
+
+        $isAdmin = $this->model->isUserAdmin();
+        $taskId = 0;
+        $transactionId = 0;
+        $headingText = "";
+        $unitMany = $this->model->getUnit()->getNameOfMany();
+
+        if ($isEditTask) {
+            $taskId = $_POST[self::$postEditTaskButtonNameKey];
+            $event = $this->model->getTask($taskId);
+            $aueId = $event->getAdminUserEntityId();
+            $parentsName = $this->model->getParentsName($aueId);
+            $childsName = $this->model->getChildsName($aueId);
+
+            if ($event == null) {
+                $this->model->setMessage("Fel vid hämtning av uppgift", MessageType::Error);
+                return '';
+            }
+            $headingText = "Redigera befintlig uppgift";
+        } else if ($isNewTask) {
+            $headingText = "Skapa ny uppgift";
+        } else if ($isEditTransaction) {
+            $transactionId = $_POST[self::$postEditTransactionButtonNameKey];
+            $event = $this->model->getTransaction($transactionId);
+            $aueId = $event->getAdminUserEntityId();
+            $parentsName = $this->model->getParentsName($aueId);
+            $childsName = $this->model->getChildsName($aueId);
+
+            if ($event == null) {
+                $this->model->setMessage("Fel vid hämtning av uppgift", MessageType::Error);
+                return '';
+            }
+            $headingText = "Redigera överföring";
+        } else if ($isNewTransaction) {
+            if ($isAdmin) {
+                $headingText = "Skapa överföring";
+            } else {
+                $headingText = "Initiera överföring";
+            }
+        }
+
+        $html = '
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <div>
+                    <h3 class="panel-title">' . $headingText . '
+                    </h3>
+                </div>
+            </div>
+            <div class="panel-body">
+                <form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">';
+                if ($isEditTask) {
+                    $html .= '
+                    <button type="submit"
+                        class="btn btn-success pull-right"
+                        name="' . self::$postUpdateTaskButtonNameKey . '"
+                        value="' . $taskId . '">Uppdatera</button>';
+                } else if ($isNewTask) {
+                    $html .= '
+                    <button type="submit"
+                        class="btn btn-success pull-right"
+                        name="' . self::$postNewTaskButtonNameKey . '"
+                        value="' . $taskId . '">Skapa</button>';
+
+                } else if ($isEditTransaction) {
+                    $html .= '
+                    <button type="submit"
+                        class="btn btn-success pull-right"
+                        name="' . self::$postUpdateTransactionButtonNameKey . '"
+                        value="' . $transactionId . '">Uppdatera</button>';
+                } else if ($isNewTransaction) {
+                    $html .= '
+                    <button type="submit"
+                        class="btn btn-success pull-right"
+                        name="' . self::$postNewTransactionButtonNameKey . '"
+                        value="' . $transactionId . '">Skapa</button>';
+                }
+                $html .= '
+                    <button type="button"
+                        class="btn btn-warning pull-right">Avbryt</button>';
+                if ($isNewTask || $isEditTask) {
+                    $html .= '
+                        <div class="form-group col-lg-6">
+                            <label for="titleId">Titel:</label>
+                            <input class="form-control"
+                                type="text"
+                                name="' . self::$postEventTitleKey . '"
+                                id="titleId"
+                                placeholder="Ange titel här"
+                                value="' . (($isEditTask) ? $event->getTitle() : '') . '"
+                                autofocus />
+                        </div>';
+                }
+                $html .= '
+                    <div class="form-group col-lg-12">
+                        <label for="descriptionId">Beskrivning:</label>
+                        <input class="form-control"
+                            type="text"
+                            name="' . self::$postEventDescriptionKey . '"
+                            placeholder="Ange beskrivning här"
+                            value="' . (($isEditTask || $isEditTransaction) ? $event->getDescription() : '') . '"
+                            id="descriptionId"
+                            required/>
+                    </div>';
+                if ($isEditTransaction || $isNewTransaction) {
+                    $html .= '
+                    <div class="form-group col-lg-4">
+                        <label for="transactionValueId">Överföring  (' . $unitMany . '):</label>
+                        <input class="form-control"
+                            type="number"
+                            step=0.01
+                            min=0.01
+                            name="' . self::$postTransactionValueKey . '"
+                            value="' . (($isEditTransaction) ? $event->getTransactionValue(false) : 0) . '"
+                            id="transactionValueId"
+                            required/>
+                    </div>';
+                    $html .= '
+                    <div class="form-group col-lg-4">';
+                    if ($isAdmin) {
+                        $html .= '
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey . '" value="0" checked>Överföring till ' . $childsName . ' (Insättning)<br/>
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey . '" value="1">Överföring från ' . $childsName . ' (Uttag)
+                        ';
+                    } else {
+                        $html .= '
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey .'" value="1">Överföring till ' . $parentsName . ' (Uttag)<br/>
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey .'" value="0" checked>Överföring från ' . $parentsName . ' (Insättning)
+                        ';
+                    }
+                    $html .= '
+                    </div>';
+                } else if ($isEditTask || $isNewTask) {
+                    $html .= '
+                    <div class="form-group col-lg-4">
+                        <label for="taskRewardValueId">Belöning (' . $unitMany . '):</label>
+                        <input class="form-control"
+                            type="number"
+                            step=0.01
+                            min=0
+                            name="' . self::$postTaskRewardValueKey . '"
+                            value="' . (($isEditTask) ? $event->getRewardValue(false) : 0) . '"
+                            id="taskRewardValueId"
+                            required/>
+                    </div>';
+                    $html .= '
+                    <div class="form-group col-lg-4">
+                        <label for="taskPenaltyValueId">Straff (' . $unitMany . '):</label>
+                        <input class="form-control"
+                            type="number"
+                            step=0.01
+                            max=0
+                            name="' . self::$postTaskPenaltyValueKey . '"
+                            value="' . (($isEditTask) ? $event->getPenaltyValue(false) : 0) . '"
+                            id="taskPenaltyValueId"
+                            required/>
+                    </div>';
+                }
+                $html .= '
+                </form>
+            </div>
+        </div>';
 
         return $html;
     }

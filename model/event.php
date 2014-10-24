@@ -87,6 +87,8 @@ abstract class Event {
     public function getId() {
         return $this->id;
     }
+
     abstract function getValue($isAdmin);
+
     abstract function getIsPending();
 }

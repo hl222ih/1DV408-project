@@ -25,7 +25,8 @@ class TasksView extends View {
     }
 
     function getHtml() {
-        $html = '
+        $html =
+$this->getHtmlForEventEdit() . '
 <div class="panel panel-info">
     <div class="panel-heading">
         <div>

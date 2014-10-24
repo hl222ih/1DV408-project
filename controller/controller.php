@@ -86,31 +86,25 @@ class Controller {
             }
         } else {
             if ($this->startView->wasConfirmTaskDoneButtonClicked()) {
-                $this->model->ConfirmTaskDone($this->startView->getEventId());
-            }
-            if ($this->startView->wasEditTaskButtonClicked()) {
-                $this->model->EditTask($this->startView->getEventId());
-            }
-            if ($this->startView->wasRemoveTaskButtonClicked()) {
-                $this->model->RemoveTask($this->startView->getEventId());
-            }
-            if ($this->startView->wasRegretMarkTaskDoneButtonClicked()) {
-                $this->model->RegretMarkTaskDone($this->startView->getEventId());
-            }
-            if ($this->startView->wasMarkTaskDoneButtonClicked()) {
-                $this->model->MarkTaskDone($this->startView->getEventId());
-            }
-            if ($this->startView->wasConfirmTransactionButtonClicked()) {
-                $this->model->ConfirmTransaction($this->startView->getEventId());
-            }
-            if ($this->startView->wasEditTransactionButtonClicked()) {
-                $this->model->EditTransaction($this->startView->getEventId());
-            }
-            if ($this->startView->wasRegretTransactionButtonClicked()) {
-                $this->model->RegretTransaction($this->startView->getEventId());
-            }
-            if ($this->startView->wasRemoveTransactionButtonClicked()) {
-                $this->model->RemoveTransaction($this->startView->getEventId());
+                $this->model->confirmTaskDone($this->startView->getEventId());
+            } else if ($this->startView->wasEditTaskButtonClicked()) {
+                //$this->model->editTask($this->startView->getEventId());
+            } else if ($this->startView->wasRemoveTaskButtonClicked()) {
+                $this->model->removeTask($this->startView->getEventId());
+            } else if ($this->startView->wasRegretMarkTaskDoneButtonClicked()) {
+                $this->model->regretMarkTaskDone($this->startView->getEventId());
+            } else if ($this->startView->wasMarkTaskDoneButtonClicked()) {
+                $this->model->markTaskDone($this->startView->getEventId());
+            } else if ($this->startView->wasConfirmTransactionButtonClicked()) {
+                $this->model->confirmTransaction($this->startView->getEventId());
+            } else if ($this->startView->wasEditTransactionButtonClicked()) {
+                $this->model->editTransaction($this->startView->getEventId());
+            } else if ($this->startView->wasRegretTransactionButtonClicked()) {
+                $this->model->regretTransaction($this->startView->getEventId());
+            } else if ($this->startView->wasRemoveTransactionButtonClicked()) {
+                $this->model->removeTransaction($this->startView->getEventId());
+            } else if ($this->startView->wasChangeAdminUserEntityButtonClicked()) {
+                $this->model->changeActiveAdminUserEntityId($this->startView->getAdminUserEntityId());
             }
 
             $requestedPage = $this->startView->getRequestedPage();

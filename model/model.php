@@ -30,6 +30,8 @@ class Model {
     private static $sessionLastPostedName = "Model::LastPostedName";
     private static $sessionLastRegisterAdminAccountChecked = "Model:LastPostedRegisterAdminAccountChecked";
 
+    private static $sessionActiveAdminUserEntityId = "Model::AAueId";
+
     private $user;
     private $adminUserEntities;
     private $unit;
@@ -46,9 +48,7 @@ class Model {
                 $this->unit = new Unit("krona", "kronor", "kr");
                 $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
                 $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
-
-                //unit=<unitId> (none = all)
-                //aue=<adminUserEntity> (none = all)
+                $this->setActiveAdminUserEntityId(0); //visa alla anslutna aue:s som default
 
                 //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
                 //TODO: borde bara hämta innehåll som är väsentligt för vyn
@@ -83,8 +83,7 @@ class Model {
         return $this->user->isLoggedIn();
     }
 
-    private function setMessage($message, $messageType = MessageType::Info) {
-        //$_SESSION[self::$sessionFeedbackMessageKey] = $message;
+    public function setMessage($message, $messageType = MessageType::Info) {
         $_SESSION[self::$sessionFeedbackMessageKey] = serialize(new Message($message, $messageType));
     }
 
@@ -280,8 +279,13 @@ class Model {
             $events = array_merge($this->tasks, $this->transactions);
         }
 
-        //TODO: sorting should be done.
+        usort($events, array($this, "compareEventsByTime"));
+
         return $events;
+    }
+
+    private function compareEventsByTime(Event $e1, Event $e2) {
+        return $e1->getTimeOfRequest() - $e2->getTimeOfRequest();
     }
 
     public function getPendingEvents() {
@@ -295,6 +299,7 @@ class Model {
     }
 
     public function getTasks() {
+        usort($this->tasks, array($this, "compareEventsByTime"));
         return $this->tasks;
     }
 
@@ -303,18 +308,22 @@ class Model {
             return $task->getIsUpcoming();
         });
 
+        usort($upcomingTasks, array($this, "compareEventsByTime"));
+
         return $upcomingTasks;
     }
 
     public function getTransactions() {
+        usort($this->transactions, array($this, "compareEventsByTime"));
+
         return $this->transactions;
     }
 
     public function getParentsName($adminUserEntityId) {
 
-        $aue = array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {
+        $aue = array_values(array_filter($this->adminUserEntities, function($aue) use(&$adminUserEntityId) {
             return $aue->getId() == $adminUserEntityId;
-        })[0];
+        }))[0];
 
         $parentsName = "name not found";
         if ($aue) {
@@ -325,9 +334,9 @@ class Model {
 
     public function getChildsName($adminUserEntityId) {
 
-        $aue = array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {
+        $aue = array_values(array_filter($this->adminUserEntities, function($aue) use( &$adminUserEntityId) {
             return $aue->getId() == $adminUserEntityId;
-        })[0];
+        }))[0];
 
         $childsName = "name not found";
         if ($aue) {
@@ -350,5 +359,119 @@ class Model {
 
     public function getUnit() {
         return $this->unit;
+    }
+
+    /**
+     * Used to check the genuineness of a request to make a change in tasks.
+     * The one who makes the request might need to be admin and
+     * the task needs to be in the current scope of tasks determined by the
+     * user-admin-connection.
+     *
+     * @param $taskId - the id of the task
+     * @param $needToBeAdmin - if user needs to be admin to be allowed to change the task.
+     * @return bool
+     */
+    private function isAllowedToChangeTask($taskId, $needToBeAdmin) {
+        $isAllowed = true;
+        if ($needToBeAdmin) {
+            if (!$this->isUserAdmin())
+            {
+                $this->setMessage("Du saknar rättigheter att göra ändringar i uppgifter.", MessageType::Error);
+                $isAllowed = false;
+            }
+        }
+        if (!array_filter($this->tasks, function ($task) use(&$taskId)  {
+            return ($task->getId() == $taskId);
+        })) {
+            $isAllowed = false;
+            $this->setMessage("Åtkomst nekad för aktuell uppgift.", MessageType::Error);
+        };
+
+        return $isAllowed;
+    }
+
+    public function confirmTaskDone($taskId) {
+        if ($this->isAllowedToChangeTask($taskId, true)) {
+            $this->dao->comfirmTaskDoneByTaskId($taskId);
+        }
+    }
+
+    public function editTask($taskId) {
+        //bör ju vara giltig taskId men inget krav på admin.
+        //bör hämta taskinfo och förbereda redigering på sidan
+        //med en submitbutton som uppdaterar databasen.
+        if ($this->isAllowedToChangeTask($taskId, true)) {
+
+            $this->dao->getTask($taskId);
+        }
+    }
+
+    //TODO: form for creating or updating a Task.
+    public function createTask() {
+        if ($this->isUserAdmin()) {
+            //$this->dao->createTask(...);
+        }
+    }
+    public function updateTask() {
+        if ($this->isAllowedToChangeTask($taskId, true)) {
+            //$this->dao->updateTask($taskId,...);
+        }
+    }
+
+    public function removeTask($taskId) {
+    }
+
+    public function regretMarkTaskDone($taskId) {
+    }
+    public function markTaskDone($taskId) {
+    }
+    public function confirmTransaction($taskId) {
+    }
+    public function editTransaction($taskId) {
+    }
+    public function regretTransaction($taskId) {
+    }
+    public function removeTransaction($taskId) {
+    }
+
+    public function getTask($taskId) {
+        $task = array_values(array_filter($this->tasks, function ($task) use(&$taskId)  {
+            return ($task->getId() == $taskId);
+        }))[0];
+        return $task;
+    }
+    public function getTransaction($transactionId) {
+        $transaction = array_values(array_filter($this->transactions, function ($transaction) use(&$transactionId)  {
+            return ($transaction->getId() == 2);
+        }))[0];
+
+        return $transaction;
+    }
+
+    public function getActiveAdminUserEntityId() {
+        return isset($_SESSION[self::$sessionActiveAdminUserEntityId]) ? $_SESSION[self::$sessionActiveAdminUserEntityId] : false;
+    }
+
+    private function setActiveAdminUserEntityId($aueId) {
+        $_SESSION[self::$sessionActiveAdminUserEntityId] = $aueId;
+    }
+
+    public function changeActiveAdminUserEntityId($aueId) {
+        if ($aueId == 0) {
+            $this->setMessage("Visar nu information för alla");
+        } else {
+            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$aueId)  {
+                return ($aue->getId() == $aueId);
+            }))[0];
+
+            if ($aue != null) {
+                $this->setActiveAdminUserEntityId($aueId);
+                if ($this->isUserAdmin()) {
+                    $this->setMessage("Visar nu information för " . $this->getUsersName($aueId) . ".");
+                } else {
+                    $this->setMessage("Visar nu information för " . $this->getParentsName($aueId) . ".");
+                }
+            }
+        }
     }
 }
