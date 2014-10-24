@@ -20,6 +20,8 @@ class StartView extends ViewKeys {
     private $createAdminAccount;
     private $eventId;
     private $aueId;
+    private $connectAccountName;
+    private $connectAccountToken;
 
     public function __construct(Model $model) {
         $this->model = $model;
@@ -31,6 +33,8 @@ class StartView extends ViewKeys {
         $this->name = (isset($_POST[self::$postNameKey]) ? $_POST[self::$postNameKey] : "");
         $this->createAdminAccount = (isset($_POST[self::$postAdminAccountCheckedKey]) ? true : false);
         $this->aueId = (isset($_POST[self::$postChangeAdminUserEntityIdKey]) ? $_POST[self::$postChangeAdminUserEntityIdKey] : 0);
+        $this->connectAccountName = (isset($_POST[self::$postConnectAccountUsernameKey]) ? $_POST[self::$postConnectAccountUsernameKey] : "");
+        $this->connectAccountToken = (isset($_POST[self::$postConnectAccountTokenKey]) ? $_POST[self::$postConnectAccountTokenKey] : "");
     }
 
     public function unsetCookies() {
@@ -164,5 +168,17 @@ class StartView extends ViewKeys {
 
     public function getAdminUserEntityId() {
         return $this->aueId;
+    }
+
+    public function wasConnectAccountsButtonClicked() {
+        return isset($_POST[self::$postConnectAccountsButtonNameKey]);
+    }
+
+    public function getConnectAccountName() {
+        return $this->connectAccountName;
+    }
+
+    public function getConnectAccountToken() {
+        return $this->connectAccountToken;
     }
 }

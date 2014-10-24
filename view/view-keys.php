@@ -41,4 +41,8 @@ class ViewKeys {
 
     protected static $postChangeSignOnTransactionKey = "View::ChangeSignForTransaction";
     protected static $postChangeAdminUserEntityIdKey = "View::ChangeAueId";
+
+    protected static $postConnectAccountUsernameKey = "View::ConnectAccountUsername";
+    protected static $postConnectAccountTokenKey = "View::ConnectAccountToken";
+    protected static $postConnectAccountsButtonNameKey = "View::ConnectAccounts";
 }

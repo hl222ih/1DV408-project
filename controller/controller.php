@@ -98,13 +98,15 @@ class Controller {
             } else if ($this->startView->wasConfirmTransactionButtonClicked()) {
                 $this->model->confirmTransaction($this->startView->getEventId());
             } else if ($this->startView->wasEditTransactionButtonClicked()) {
-                $this->model->editTransaction($this->startView->getEventId());
+                //$this->model->editTransaction($this->startView->getEventId());
             } else if ($this->startView->wasRegretTransactionButtonClicked()) {
                 $this->model->regretTransaction($this->startView->getEventId());
             } else if ($this->startView->wasRemoveTransactionButtonClicked()) {
                 $this->model->removeTransaction($this->startView->getEventId());
             } else if ($this->startView->wasChangeAdminUserEntityButtonClicked()) {
                 $this->model->changeActiveAdminUserEntityId($this->startView->getAdminUserEntityId());
+            } else if ($this->startView->wasConnectAccountsButtonClicked()) {
+                $this->model->connectAccounts($this->startView->getConnectAccountName(), $this->startView->getConnectAccountToken());
             }
 
             $requestedPage = $this->startView->getRequestedPage();

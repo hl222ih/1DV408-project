@@ -192,7 +192,7 @@ class Dao {
         $fieldSaltedPassword = "salted_password";
         $fieldSalt = "salt";
 
-        $secretToken = ""; //empty for now...
+        $secretToken = $this->generateSecretToken(); //empty for now...
         $salt = $username; //username as salt
         $saltedPassword = $this->encryptPassword($password, $salt);
 
@@ -212,9 +212,19 @@ class Dao {
         return $isSuccess;
     }
 
-    //**A secret token would be needed to map another user to ones account
-    //private function generateSecretToken() {
-    //}
+    /**
+     * A secret token would be needed to map another user to ones account
+     * This function generates and returns a five digit number.
+     * @return int|string
+     */
+    private function generateSecretToken() {
+        //doesn't need to be particularly secure. More important to be easy to type in.
+        $token = rand(1,9);
+        for ($i = 0; $i < 4; $i++) {
+            $token .= rand(0,10);
+        }
+        return $token;
+    }
 
     public function getTasksByUserId($userId) {
         $tableTask = "task";
@@ -349,4 +359,61 @@ class Dao {
         return $transactions;
     }
 
+    public function getSecretTokenByUserId($userId) {
+        $fieldSecretToken = "secret_token";
+        $tableUser = "user";
+        $fieldId = "id";
+
+        $statement = $this->connection->prepare("
+                        SELECT $fieldSecretToken
+                        FROM $tableUser
+                        WHERE $fieldId = :id");
+        $statement->bindParam(':id', $userId, PDO::PARAM_STR);
+        $statement->execute();
+
+        $secretToken = $statement->fetchAll(PDO::FETCH_COLUMN)[0];
+
+        return (isset($secretToken) ? $secretToken : "");
+    }
+
+    public function connectAccounts($ownUserId, $isOwnUserAdmin, $foreignUsername, $secretToken) {
+        $fieldSecretToken = "secret_token";
+        $tableUser = "user";
+        $fieldUsername = "username";
+        $tableUserToUser = "user_to_user";
+        $fieldChildUserId = "child_user_id";
+        $fieldParentUserId = "parent_user_id";
+
+        $statement = $this->connection->prepare("
+                        SELECT $fieldSecretToken
+                        FROM $tableUser
+                        WHERE $fieldUsername = :username");
+        $statement->bindParam(':username', $foreignUsername, PDO::PARAM_STR);
+        $statement->execute();
+        $savedSecretToken = $statement->fetchAll(PDO::FETCH_COLUMN)[0];
+        $otherUser = $this->getUserByUsername($foreignUsername);
+        $otherUserId = $otherUser->getId();
+        $isSuccess = false;
+
+        //Check if secret tokens match and that admin/parent is not connecting to admin/parent
+        //and user/child is not connecting to user/child. This also prevent connecting to oneself.
+        echo $isOwnUserAdmin;
+        echo $otherUser->getIsAdmin();
+        if ($savedSecretToken == $secretToken && $isOwnUserAdmin != $otherUser->getIsAdmin()) {
+            $statement = $this->connection->prepare("
+                        INSERT INTO $tableUserToUser ($fieldChildUserId, $fieldParentUserId)
+                        VALUES (:child_user_id, :parent_user_id)
+                        ");
+            if ($isOwnUserAdmin) {
+                $statement->bindParam(':child_user_id', $otherUserId, PDO::PARAM_STR);
+                $statement->bindParam(':parent_user_id', $ownUserId, PDO::PARAM_STR);
+            } else {
+                $statement->bindParam(':child_user_id', $ownUserId, PDO::PARAM_STR);
+                $statement->bindParam(':parent_user_id', $otherUserId, PDO::PARAM_STR);
+            }
+            $isSuccess = $statement->execute();
+        }
+
+        return $isSuccess;
+    }
 }

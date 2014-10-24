@@ -230,7 +230,7 @@ abstract class View extends ViewKeys {
         '</p>
         <p class="list-group-item-text">
             <span class="label label-' . (($event->getIsConfirmed()) ? 'success' : (($event->getIsDenied()) ? 'danger' : (($event->getIsPending()) ? 'warning' : 'info'))) . ' pull-left">' .
-        $event->getStatusText() . (($event->getIsConfirmed() || $event->getIsDenied()) ? ': ' . $event->getValue(true) . ' ' . $this->model->getUnit()->getShortName() : '')
+        $event->getStatusText() . (($event->getIsConfirmed() || $event->getIsDenied()) ? ': ' . $event->getValue($this->model->isUserAdmin()) . ' ' . $this->model->getUnit()->getShortName() : '')
         . '</span>&nbsp;<span>' .
         $event->getDescription() . '</span>
         </p>';

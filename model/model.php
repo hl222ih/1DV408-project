@@ -474,4 +474,16 @@ class Model {
             }
         }
     }
+
+    public function getSecretToken() {
+        return $this->dao->getSecretTokenByUserId($this->user->getId());
+    }
+
+    public function connectAccounts($username, $secretToken) {
+        if ($this->dao->connectAccounts($this->user->getId(), $this->isUserAdmin(), $username, $secretToken)) {
+            $this->setMessage("Ditt konto har nu kopplats ihop med" . $this->user->getName() . ".", MessageType::Success);
+        } else {
+            $this->setMessage("Ihopkopplingen av kontona misslyckades.", MessageType::Error);
+        }
+    }
 }
