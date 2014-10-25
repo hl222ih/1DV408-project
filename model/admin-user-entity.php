@@ -38,4 +38,12 @@ class AdminUserEntity {
     public function getBalance() {
         return $this->balance;
     }
+
+    public function getUsersId() {
+        return $this->userId;
+    }
+
+    public function getAdminsId() {
+        return $this->adminId;
+    }
 }

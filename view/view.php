@@ -242,7 +242,7 @@ abstract class View extends ViewKeys {
         $isEditTask = isset($_POST[self::$postEditTaskButtonNameKey]);
         $isNewTask = isset($_POST[self::$postNewTaskButtonNameKey]);
         $isEditTransaction = isset($_POST[self::$postEditTransactionButtonNameKey]);
-        $isNewTransaction = isset($_POST[self::$postNewTransactionButtonNameKey]);
+        $isNewTransaction = isset($_POST[self::$postNewTransactionForAueIdButtonNameKey]);
 
         if (!$isEditTask && !$isNewTask && !$isEditTransaction && !$isNewTransaction)
             return '';
@@ -285,6 +285,11 @@ abstract class View extends ViewKeys {
             } else {
                 $headingText = "Initiera överföring";
             }
+            $transactionId = $_POST[self::$postEditTransactionButtonNameKey];
+            //$event = $this->model->getTransaction($transactionId);
+            $aueId = $_POST[self::$postNewTransactionForAueIdButtonNameKey];
+            $parentsName = $this->model->getParentsName($aueId);
+            $childsName = $this->model->getChildsName($aueId);
         }
 
         $html = '
@@ -308,7 +313,7 @@ abstract class View extends ViewKeys {
                     <button type="submit"
                         class="btn btn-success pull-right"
                         name="' . self::$postNewTaskButtonNameKey . '"
-                        value="' . $taskId . '">Skapa</button>';
+                        value="' . $aueId . '">Skapa</button>';
 
                 } else if ($isEditTransaction) {
                     $html .= '
@@ -320,8 +325,8 @@ abstract class View extends ViewKeys {
                     $html .= '
                     <button type="submit"
                         class="btn btn-success pull-right"
-                        name="' . self::$postNewTransactionButtonNameKey . '"
-                        value="' . $transactionId . '">Skapa</button>';
+                        name="' . self::$postExecuteNewTransactionForAueIdButtonNameKey . '"
+                        value="' . $aueId . '">Skapa</button>';
                 }
                 $html .= '
                     <button type="button"
@@ -359,21 +364,26 @@ abstract class View extends ViewKeys {
                             step=0.01
                             min=0.01
                             name="' . self::$postTransactionValueKey . '"
-                            value="' . (($isEditTransaction) ? $event->getTransactionValue(false) : 0) . '"
+                            value="' . (($isEditTransaction) ? abs($event->getTransactionValue(false)) : 0) . '"
                             id="transactionValueId"
                             required/>
                     </div>';
                     $html .= '
                     <div class="form-group col-lg-4">';
+                    if ($isNewTransaction) {
+                        $isDeposit = true;
+                    } else {
+                        $isDeposit = ($event->getTransactionValue($isAdmin) < 0);
+                    }
                     if ($isAdmin) {
                         $html .= '
-                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey . '" value="0" checked>Överföring till ' . $childsName . ' (Insättning)<br/>
-                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey . '" value="1">Överföring från ' . $childsName . ' (Uttag)
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey . '" value="0" ' . ($isDeposit ? 'checked' : '') . '>Överföring till ' . $childsName . ' (Insättning)<br/>
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey . '" value="1" ' . ($isDeposit ? '' : 'checked') . '>Överföring från ' . $childsName . ' (Uttag)
                         ';
                     } else {
                         $html .= '
-                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey .'" value="1">Överföring till ' . $parentsName . ' (Uttag)<br/>
-                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey .'" value="0" checked>Överföring från ' . $parentsName . ' (Insättning)
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey .'" value="1" ' . ($isDeposit ? '' : 'checked') . '>Överföring till ' . $parentsName . ' (Uttag)<br/>
+                            <input type="radio" name="'. self::$postChangeSignOnTransactionKey .'" value="0" ' . ($isDeposit ? 'checked' : '') . '>Överföring från ' . $parentsName . ' (Insättning)
                         ';
                     }
                     $html .= '

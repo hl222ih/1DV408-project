@@ -433,4 +433,40 @@ class Dao {
 
         return $statement->execute();
     }
+
+    public function insertNewTransaction($adminUserIdentityId, $description, $value, $isConfirmed) {
+        $tableTransaction = "transaction";
+        $fieldUserToUserId = "user_to_user_id";
+        $fieldUnitId = "unit_id";
+        $fieldTimeOfRequest = "time_of_request";
+        $fieldTimeOfResponse = "time_of_response";
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+        $fieldTransactionValue = "transaction_value";
+        $fieldDescription = "description";
+
+        $unitId = 1; //hard coded for now...
+        $timeOfRequestForMySql = date('Y-m-d H:i:s', time());
+        $timeOfResponseForMySql = $isConfirmed ? $timeOfRequestForMySql : null;
+        $isDenied = false; //can't be denied upon creation
+
+        $statement = $this->connection->prepare("
+                        INSERT INTO $tableTransaction ($fieldUserToUserId, $fieldUnitId, $fieldTimeOfRequest,
+                        $fieldTimeOfResponse, $fieldIsConfirmed, $fieldIsDenied, $fieldTransactionValue, $fieldDescription)
+                        VALUES (:user_to_user_id, :unit_id, :time_of_request, :time_of_response, :is_confirmed,
+                        :is_denied, :transaction_value, :description)
+                        ");
+        $statement->bindParam(':user_to_user_id', $adminUserIdentityId, PDO::PARAM_INT);
+        $statement->bindParam(':unit_id', $unitId, PDO::PARAM_INT);
+        $statement->bindParam(':time_of_request', $timeOfRequestForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
+        $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
+        $statement->bindParam(':transaction_value', $value, PDO::PARAM_INT);
+        $statement->bindParam(':description', $description, PDO::PARAM_STR);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
 }

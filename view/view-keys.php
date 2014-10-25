@@ -31,7 +31,7 @@ class ViewKeys {
     protected static $postRemoveTransactionButtonNameKey = "View::RemoveTransaction";
 
     protected static $postUpdateTransactionButtonNameKey = "View::UpdateTransaction";
-    protected static $postNewTransactionButtonNameKey = "View::NewTransaction";
+    protected static $postNewTransactionForAueIdButtonNameKey = "View::NewTransactionForAueId";
 
     protected static $postEventDescriptionKey = "View::EventDescription";
     protected static $postEventTitleKey = "View::EventTitle";
@@ -45,4 +45,7 @@ class ViewKeys {
     protected static $postConnectAccountUsernameKey = "View::ConnectAccountUsername";
     protected static $postConnectAccountTokenKey = "View::ConnectAccountToken";
     protected static $postConnectAccountsButtonNameKey = "View::ConnectAccounts";
+    //protected static $postAdminUserEntityIdKey = "View::AdminUserEntityId";
+
+    protected static $postExecuteNewTransactionForAueIdButtonNameKey = "View::ExecuteNewTransactionForAueId";
 }

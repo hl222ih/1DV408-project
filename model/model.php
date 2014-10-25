@@ -495,4 +495,50 @@ class Model {
             $this->setMessage("Ihopkopplingen av kontona misslyckades.", MessageType::Error);
         }
     }
+
+    public function getAdminUserEntities() {
+        return $this->adminUserEntities;
+    }
+
+    public function createNewTransaction($adminUserIdentityId, $description, $value, $shouldChangeSign) {
+        if ($value == 0) {
+            $this->setMessage("En överföring får inte har värdet 0", MessageType::Error);
+        } else if (!$this->doesAueIdBelongToUser($adminUserIdentityId)) {
+            $this->setMessage("Du saknar rättigheter att hantera överföringar", MessageType::Error);
+        } else {
+            if ($shouldChangeSign) {
+                $value = -$value;
+            }
+            if ($this->isUserAdmin()) {
+                $isConfirmed = true;
+            } else {
+                $isConfirmed = false;
+            }
+            if ($this->dao->insertNewTransaction($adminUserIdentityId, $description, $value, $isConfirmed)) {
+                if ($isConfirmed) {
+                    $this->setMessage("Överföringen är utförd", MessageType::Success);
+                } else {
+                    $this->setMessage("Överföringen har initierats och väntar på godkännande", MessageType::Success);
+                }
+            } else {
+                $this->setMessage("Överföringen kunde inte skapas", MessageType::Error);
+            }
+        }
+    }
+
+    private function doesAueIdBelongToUser($aueId) {
+        if ($this->user->getIsAdmin()) {
+            $adminId = $this->user->getId();
+            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$aueId, &$adminId)  {
+                return ($aue->getId() == $aueId && $aue->getAdminsId() == $adminId);
+            }))[0];
+        } else {
+            $userId = $this->user->getId();
+            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$aueId, &$userId)  {
+                return ($aue->getId() == $aueId && $aue->getUsersId() == $userId);
+            }))[0];
+        }
+        $isBelonging = ($aue != null);
+        return $isBelonging;
+    }
 }

@@ -35,6 +35,7 @@ class StartView extends ViewKeys {
         $this->aueId = (isset($_POST[self::$postChangeAdminUserEntityIdKey]) ? $_POST[self::$postChangeAdminUserEntityIdKey] : 0);
         $this->connectAccountName = (isset($_POST[self::$postConnectAccountUsernameKey]) ? $_POST[self::$postConnectAccountUsernameKey] : "");
         $this->connectAccountToken = (isset($_POST[self::$postConnectAccountTokenKey]) ? $_POST[self::$postConnectAccountTokenKey] : "");
+        $this->aueId = isset($_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey] : 0;
     }
 
     public function unsetCookies() {
@@ -83,7 +84,7 @@ class StartView extends ViewKeys {
     }
 
     public function redirectPage($page = "") {
-        header('location: ' . $_SERVER['PHP_SELF'] . ($page ? "?". self::$getPageKey . "=" . $page : ""));
+        header('location: ' . $_SERVER['PHP_SELF'] . ($page ? "?". self::$getPageKey . "=" . $page : '?'.$_SERVER["QUERY_STRING"]));
         die;
     }
 
@@ -178,4 +179,32 @@ class StartView extends ViewKeys {
     public function getConnectAccountToken() {
         return $this->connectAccountToken;
     }
+
+    public function wasNewTransactionForAueIdButtonClicked() {
+        return isset($_POST[self::$postNewTransactionForAueIdButtonNameKey]);
+    }
+
+    public function wasExecuteNewTransactionForAueIdButtonClicked() {
+        return isset($_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey]);
+    }
+
+    public function getDescription() {
+        return isset($_POST[self::$postEventDescriptionKey]) ? $_POST[self::$postEventDescriptionKey] : "";
+    }
+
+    public function getTransactionValue() {
+        return isset($_POST[self::$postTransactionValueKey]) ? $_POST[self::$postTransactionValueKey] : 0;
+    }
+
+    public function getChangeValue() {
+        return isset($_POST[self::$postChangeSignOnTransactionKey]) ? $_POST[self::$postChangeSignOnTransactionKey] : false;
+    }
 }
+
+
+
+
+
+
+
+

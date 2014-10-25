@@ -118,6 +118,14 @@ class Controller {
                     $this->startView->getConnectAccountName(),
                     $this->startView->getConnectAccountToken()
                 );
+            } else if ($this->startView->wasExecuteNewTransactionForAueIdButtonClicked()) {
+                $this->model->createNewTransaction(
+                    $this->startView->getAdminUserEntityId(),
+                    $this->startView->getDescription(),
+                    $this->startView->getTransactionValue(),
+                    $this->startView->getChangeValue()
+                );
+                $this->startView->redirectPage(); //reload to update changes
             }
 
             $requestedPage = $this->startView->getRequestedPage();
