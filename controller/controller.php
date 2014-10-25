@@ -27,6 +27,7 @@ use BoostMyAllowanceApp\View\SettingsView;
 use BoostMyAllowanceApp\View\TransactionsView;
 use BoostMyAllowanceApp\View\RegisterView;
 use BoostMyAllowanceApp\View\ViewKeys;
+use BoostMyAllowanceApp\Model\MessageType;
 
 class Controller {
 
@@ -41,6 +42,10 @@ class Controller {
         $this->startView = new StartView($this->model);
     }
 
+    /**
+     * Controlling if user is logged in, logging in user, preparing models, redirecting and loading requested view
+     * based on present cookies and user actions.
+     */
     public function start() {
 
         if (!$this->model->isUserLoggedIn()) {
@@ -55,6 +60,9 @@ class Controller {
                         $this->startView->getPassword(),
                         $this->startView->wasAutoLoginChecked()
                     );
+                    if ($this->model->isUserLoggedIn()) {
+                        $this->startView->setCookiesIfAutoLogin();
+                    }
                 } else if ($this->startView->wasRegisterButtonClicked()) {
                     if ($this->model->registerNewUser(
                         $this->startView->getUsername(),
@@ -106,7 +114,10 @@ class Controller {
             } else if ($this->startView->wasChangeAdminUserEntityButtonClicked()) {
                 $this->model->changeActiveAdminUserEntityId($this->startView->getAdminUserEntityId());
             } else if ($this->startView->wasConnectAccountsButtonClicked()) {
-                $this->model->connectAccounts($this->startView->getConnectAccountName(), $this->startView->getConnectAccountToken());
+                $this->model->connectAccounts(
+                    $this->startView->getConnectAccountName(),
+                    $this->startView->getConnectAccountToken()
+                );
             }
 
             $requestedPage = $this->startView->getRequestedPage();
@@ -138,7 +149,9 @@ class Controller {
                     $this->view = new TransactionsView($this->model);
                     break;
                 case self::$logoutViewName:
+                    $this->startView->unsetCookies();
                     $this->model->logoutUser();
+                    $this->model->setMessage("Du har nu loggat ut.", MessageType::Success);
                     $this->startView->redirectPage(LoginView::getPageName());
                     break;
                 default:
@@ -146,7 +159,9 @@ class Controller {
             }
         }
 
+        //display complete html page, including possible message.
         echo $this->view->getHtml();
+        //unset the message so it is only shown once.
         $this->model->unsetMessage();
     }
 

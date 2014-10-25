@@ -102,7 +102,7 @@ class Dao {
         if ($row) {
             $dbCookieExpiration = isset($row[$fieldCookieExpiration]) ? $row[$fieldCookieExpiration] : false; //isset really needed?
             if ($dbCookieExpiration) {
-                if ($dbCookieExpiration > time()) {
+                if (strtotime($dbCookieExpiration) > time()) {
                     $isValid = true;
                 }
             }
@@ -181,7 +181,6 @@ class Dao {
 
         return $user;
     }
-
 
     public function registerNewUser($username, $password, $name, $isAdmin) {
         $tableUser = "user";
@@ -397,8 +396,6 @@ class Dao {
 
         //Check if secret tokens match and that admin/parent is not connecting to admin/parent
         //and user/child is not connecting to user/child. This also prevent connecting to oneself.
-        echo $isOwnUserAdmin;
-        echo $otherUser->getIsAdmin();
         if ($savedSecretToken == $secretToken && $isOwnUserAdmin != $otherUser->getIsAdmin()) {
             $statement = $this->connection->prepare("
                         INSERT INTO $tableUserToUser ($fieldChildUserId, $fieldParentUserId)
@@ -415,5 +412,25 @@ class Dao {
         }
 
         return $isSuccess;
+    }
+
+    public function storeCookieInfoByUsername($username, $cookieExpirationTime, $cookiePassword) {
+        $tableUser = "user";
+        $fieldUsername = "username";
+        $fieldCookiePassword = "cookie_password";
+        $fieldCookieExpiration = "cookie_expiration";
+        $cookieExpirationTimeForMySql = date('Y-m-d H:i:s', $cookieExpirationTime);
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableUser
+                    SET $fieldCookiePassword = :cookie_password, $fieldCookieExpiration = :cookie_expiration
+                    WHERE $fieldUsername = :user_name
+                    ");
+
+        $statement->bindParam(':cookie_password', $cookiePassword, PDO::PARAM_STR);
+        $statement->bindParam(':cookie_expiration', $cookieExpirationTimeForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':user_name', $username, PDO::PARAM_STR);
+
+        return $statement->execute();
     }
 }

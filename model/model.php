@@ -146,7 +146,16 @@ class Model {
                 if ($this->dao->doesUserExist($username)) {
                     if ($this->dao->doesPasswordMatch($username, $password)) {
                         if ($autoLogin) {
-                            $this->setMessage("Inloggning lyckades och vi kommer ihåg dig nästa gång", MessageType::Success);
+                            $cookiePassword = $this->encryptCookiePassword($password);
+
+                            //cookie expiration: 30 days (30*24*60*60)
+                            $cookieExpirationTime = time() + 2592000;
+
+                            if ($this->dao->storeCookieInfoByUsername($username, $cookieExpirationTime, $cookiePassword)) {
+                                $this->setMessage("Inloggning lyckades och vi kommer ihåg dig nästa gång", MessageType::Success);
+                            } else {
+                                $this->setMessage("Inloggning lyckades", MessageType::Success); //men misslyckades med att lagra cookie-info i databasen.
+                            }
                         } else {
                             $this->setMessage("Inloggning lyckades", MessageType::Success);
                         }

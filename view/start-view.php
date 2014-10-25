@@ -52,9 +52,6 @@ class StartView extends ViewKeys {
         return (isset($_COOKIE[self::$cookieEncryptedPasswordKey]) ? $_COOKIE[self::$cookieEncryptedPasswordKey] : "");
     }
 
-    //public function setEncryptedPasswordCookie($encryptedCookiePassword) {
-    //    $_COOKIE[self::$cookieEncryptedPasswordKey] = $this->model->encryptCookiePassword($password);
-    //}
     public function setCookiesIfAutoLogin() {
         if ($this->autoLogin) {
             $encryptedCookiePassword = $this->model->encryptCookiePassword($_POST[self::$postPasswordKey]);

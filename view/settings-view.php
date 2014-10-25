@@ -40,7 +40,7 @@ class SettingsView extends View {
             <button type="submit"
                 class="btn btn-success pull-right"
                 name="' . self::$postConnectAccountsButtonNameKey . '"
-                value="' . $taskId . '">Koppla ihop konton</button>
+                value="-">Koppla ihop konton</button>
         </form>
     </div>
 </div>';
