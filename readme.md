@@ -6,6 +6,7 @@ Database UML diagram
 Class Diagram for application
 Activity diagram (kind of) for login logic overview
 Activity diagram (kind of) for model view overview
+Database Dump MySql Export
 
 Everything to be found here:
 https://drive.google.com/open?id=0B2xSA_T08RU_R0FlTzRPRkRCaWs&authuser=0
@@ -16,6 +17,7 @@ https://drive.google.com/open?id=0B2xSA_T08RU_R0FlTzRPRkRCaWs&authuser=0
 2. Import the structure with help from the database dump.
 3. Make changes in /dao/database-config.php which looks like this:
 
+```
 -------------------------------
 <?php
 
@@ -29,3 +31,4 @@ class DatabaseConfig {
     public $host = "localhost";
 }
 -------------------------------
+```
