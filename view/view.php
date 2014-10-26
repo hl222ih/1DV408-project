@@ -57,47 +57,6 @@ abstract class View extends ViewKeys {
         return $html;
     }
 
-    public function unsetCookies() {
-        unset($_COOKIE[self::$cookieEncryptedPasswordKey]);
-        setcookie(self::$cookieEncryptedPasswordKey, null, -1, '/');
-        unset($_COOKIE[self::$cookieUsernameKey]);
-        setcookie(self::$cookieUsernameKey, null, -1, '/');
-    }
-
-    public function getUsernameFromCookie() {
-        return (isset($_COOKIE[self::$cookieUsernameKey]) ? $_COOKIE[self::$cookieUsernameKey] : "");
-    }
-
-    public function getEncryptedPasswordFromCookie() {
-        return (isset($_COOKIE[self::$cookieEncryptedPasswordKey]) ? $_COOKIE[self::$cookieEncryptedPasswordKey] : "");
-    }
-
-    public function setEncryptedPasswordToCookie($encryptedCookiePassword) {
-        $_COOKIE[self::$cookieEncryptedPasswordKey] = $encryptedCookiePassword;
-    }
-    public function setCookiesIfAutoLogin() {
-        if ($this->autoLogin) {
-            $encryptedCookiePassword = $this->model->encryptCookiePassword($_POST[$this->postPasswordKey]);
-            setcookie($this->cookieUsernameKey, $_POST[$this->postUsernameKey], time()+2592000, '/'); //expire in 30 days
-            setcookie($this->cookieEncryptedPasswordKey, $encryptedCookiePassword, time()+2592000, '/');
-        }
-    }
-    public function wasLoginButtonClicked() {
-        return isset($_POST[self::$postLoginButtonNameKey]);
-    }
-
-    public function getUsername() {
-        return $this->username;
-    }
-
-    public function getPassword() {
-        return $this->password;
-    }
-
-    public function wasAutoLoginChecked() {
-        return $this->autoLogin;
-    }
-
     public static function getClassName() {
         return get_called_class();
     }
@@ -201,7 +160,7 @@ abstract class View extends ViewKeys {
         if ($event->getClassName() == Task::getClassName()) {
             $html .=
                 '<span class="label label-info">
-                    Giltig: 2014-02-24 20:30 - 2014-02-25 20:30
+                    Giltig: ' . $event->getValidFromAsDateTimeString() . ' - ' . $event->getValidToAsDateTimeString() . '
                 </span>
                 <span class="label label-info">';
             if ($event->getIsRequested()) {
@@ -266,7 +225,6 @@ abstract class View extends ViewKeys {
             }
             $headingText = "Redigera befintlig uppgift";
         } else if ($isNewTask) {
-            //$taskId = $_POST[self::$postEditTaskButtonNameKey];
             $aueId = $_POST[self::$postNewTaskForAueIdButtonNameKey];
             $parentsName = $this->model->getParentsName($aueId);
             $childsName = $this->model->getChildsName($aueId);
@@ -379,7 +337,7 @@ abstract class View extends ViewKeys {
                     if ($isNewTransaction) {
                         $isDeposit = true;
                     } else {
-                        $isDeposit = ($event->getTransactionValue($isAdmin) < 0);
+                        $isDeposit = ($event->getTransactionValue($isAdmin) > 0);
                     }
                     if ($isAdmin) {
                         $html .= '
@@ -421,7 +379,7 @@ abstract class View extends ViewKeys {
                     </div>';
                 }
 
-                if ($isNewTask) {
+                if ($isNewTask || $isEditTask) {
                     $html .= '
                         <div style="clear: both"></div>
                         <div class="form-group col-lg-3">
@@ -429,6 +387,7 @@ abstract class View extends ViewKeys {
                             <!--used for css, too-->
                             <input id="validFromId"
                                 class="form-control"
+                                value="' . (($isEditTask)? $event->getValidFromAsDateTimeString() : date('Y-m-d H:i:s', time())) .'"
                                 name="' . self::$postTaskFromTimeKey . '"
                                 required/>
                         </div>
@@ -437,9 +396,13 @@ abstract class View extends ViewKeys {
                             <!--used for css, too-->
                             <input id="validToId"
                                 class="form-control"
+                                value="' . (($isEditTask)? $event->getValidToAsDateTimeString() : date('Y-m-d H:i:s', time())). '"
                                 name="' . self::$postTaskToTimeKey . '"
                                 required/>
-                        </div>
+                        </div>';
+                }
+                if ($isNewTask) {
+                    $html .= '
                         <div class="form-group col-lg-1">
                             <label for="repeatWeeklyId">Repetera veckovis:</label>
                             <input id="repeatWeeklyId"

@@ -18,7 +18,6 @@ class StartView extends ViewKeys {
     private $passwordAgain;
     private $name;
     private $createAdminAccount;
-    private $eventId;
     private $aueId;
     private $connectAccountName;
     private $connectAccountToken;
@@ -111,7 +110,9 @@ class StartView extends ViewKeys {
             self::$postConfirmTransactionButtonNameKey,
             self::$postEditTransactionButtonNameKey,
             self::$postRegretTransactionButtonNameKey,
-            self::$postRemoveTransactionButtonNameKey
+            self::$postRemoveTransactionButtonNameKey,
+            self::$postUpdateTaskButtonNameKey,
+            self::$postUpdateTransactionButtonNameKey
         ];
 
         $eventId = false;
@@ -127,6 +128,14 @@ class StartView extends ViewKeys {
 
     public function wasConfirmTaskDoneButtonClicked() {
         return isset($_POST[self::$postConfirmTaskDoneButtonNameKey]);
+    }
+
+    public function wasUpdateTaskButtonClicked() {
+        return isset($_POST[self::$postUpdateTaskButtonNameKey]);
+    }
+
+    public function wasUpdateTransactionButtonClicked() {
+        return isset($_POST[self::$postUpdateTransactionButtonNameKey]);
     }
 
     public function wasEditTaskButtonClicked() {

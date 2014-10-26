@@ -23,8 +23,6 @@ class ViewKeys {
     protected static $postMarkTaskDoneButtonNameKey = "View::MarkTaskDone";
 
     protected static $postUpdateTaskButtonNameKey = "View::UpdateTask";
-//    protected static $postNewTaskButtonNameKey = "View::NewTask";
-
     protected static $postConfirmTransactionButtonNameKey = "View::ConfirmTransaction";
     protected static $postEditTransactionButtonNameKey = "View::EditTransaction";
     protected static $postRegretTransactionButtonNameKey = "View::RegretTransaction";

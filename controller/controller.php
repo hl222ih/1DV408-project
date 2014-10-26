@@ -18,7 +18,6 @@ require_once("view/transactions-view.php");
 
 use BoostMyAllowanceApp\Model\Model;
 use BoostMyAllowanceApp\View\StartView;
-use BoostMyAllowanceApp\View\View;
 use BoostMyAllowanceApp\View\LoginView;
 use BoostMyAllowanceApp\View\EventsView;
 use BoostMyAllowanceApp\View\TasksView;
@@ -26,7 +25,6 @@ use BoostMyAllowanceApp\View\LogView;
 use BoostMyAllowanceApp\View\SettingsView;
 use BoostMyAllowanceApp\View\TransactionsView;
 use BoostMyAllowanceApp\View\RegisterView;
-use BoostMyAllowanceApp\View\ViewKeys;
 use BoostMyAllowanceApp\Model\MessageType;
 
 class Controller {
@@ -53,6 +51,7 @@ class Controller {
      */
     public function start() {
 
+        //handle scenarios when user is starting logged out
         if (!$this->model->isUserLoggedIn()) {
             $this->model->cookieLogin(
                 $this->startView->getUsernameFromCookie(),
@@ -97,11 +96,10 @@ class Controller {
                     $this->startView->redirectPage(LoginView::getPageName());
                 }
             }
+        //handle scenarios when user is currently logged in
         } else {
             if ($this->startView->wasConfirmTaskDoneButtonClicked()) {
                 $this->model->confirmTaskDone($this->startView->getEventId());
-            } else if ($this->startView->wasEditTaskButtonClicked()) {
-                //$this->model->editTask($this->startView->getEventId());
             } else if ($this->startView->wasRemoveTaskButtonClicked()) {
                 $this->model->removeTask($this->startView->getEventId());
             } else if ($this->startView->wasRegretMarkTaskDoneButtonClicked()) {
@@ -110,10 +108,25 @@ class Controller {
                 $this->model->markTaskDone($this->startView->getEventId());
             } else if ($this->startView->wasConfirmTransactionButtonClicked()) {
                 $this->model->confirmTransaction($this->startView->getEventId());
-            } else if ($this->startView->wasEditTransactionButtonClicked()) {
-                //$this->model->editTransaction($this->startView->getEventId());
             } else if ($this->startView->wasRegretTransactionButtonClicked()) {
                 $this->model->regretTransaction($this->startView->getEventId());
+            } else if ($this->startView->wasUpdateTaskButtonClicked()) {
+                $this->model->updateTask(
+                    $this->startView->getEventId(),
+                    $this->startView->getTitle(),
+                    $this->startView->getDescription(),
+                    $this->startView->getRewardValue(),
+                    $this->startView->getPenaltyValue(),
+                    $this->startView->getValidFrom(),
+                    $this->startView->getValidTo()
+                );
+            } else if ($this->startView->wasUpdateTransactionButtonClicked()) {
+                $this->model->updateTransaction(
+                    $this->startView->getEventId(),
+                    $this->startView->getDescription(),
+                    $this->startView->getTransactionValue(),
+                    $this->startView->getChangeValue()
+                );
             } else if ($this->startView->wasRemoveTransactionButtonClicked()) {
                 $this->model->removeTransaction($this->startView->getEventId());
             } else if ($this->startView->wasChangeAdminUserEntityButtonClicked()) {
@@ -123,7 +136,6 @@ class Controller {
                     $this->startView->getConnectAccountName(),
                     $this->startView->getConnectAccountToken()
                 );
-                $this->model->loadAdminUserEntities();
             } else if ($this->startView->wasExecuteNewTransactionForAueIdButtonClicked()) {
                 $this->model->createNewTransaction(
                     $this->startView->getAdminUserEntityId(),
@@ -131,8 +143,6 @@ class Controller {
                     $this->startView->getTransactionValue(),
                     $this->startView->getChangeValue()
                 );
-                $this->model->loadTransactions();
-//                $this->startView->redirectPage(); //reload to update changes
             } else if ($this->startView->wasExecuteNewTaskForAueIdButtonClicked()) {
                 $this->model->createNewTask(
                     $this->startView->getAdminUserEntityId(),
@@ -144,10 +154,9 @@ class Controller {
                     $this->startView->getValidTo(),
                     $this->startView->getRepeatNumberOfWeeks()
                 );
-                $this->model->loadTasks();
-//                $this->startView->redirectPage(); //reload to update changes
             }
 
+            //load requested view
             $requestedPage = $this->startView->getRequestedPage();
             $this->model->setRequestedPage($requestedPage);
             switch ($requestedPage) {

@@ -397,7 +397,7 @@ class Model {
      * Used to check the genuineness of a request to make a change in tasks.
      * The one who makes the request might need to be admin and
      * the task needs to be in the current scope of tasks determined by the
-     * user-admin-connection.
+     * user-admin-connection (adminUserEntities).
      *
      * @param $taskId - the id of the task
      * @param $needToBeAdmin - if user needs to be admin to be allowed to change the task.
@@ -422,6 +422,16 @@ class Model {
         return $isAllowed;
     }
 
+    /**
+     * Used to check the genuineness of a request to make a change in transactions.
+     * The one who makes the request might need to be admin and
+     * the transaction needs to be in the current scope of transactions determined by the
+     * user-admin-connections (adminUserEntities).
+     *
+     * @param $transactionId - the id of the transaction
+     * @param $needToBeAdmin - if user needs to be admin to be allowed to change the transaction.
+     * @return bool
+     */
     private function isAllowedToChangeTransaction($transactionId, $needToBeAdmin) {
         $isAllowed = true;
         if ($needToBeAdmin) {
@@ -443,46 +453,117 @@ class Model {
 
     public function confirmTaskDone($taskId) {
         if ($this->isAllowedToChangeTask($taskId, true)) {
-            $this->dao->comfirmTaskDoneByTaskId($taskId);
+            $task = $this->getTask($taskId);
+            $aueId = $task->getAdminUserEntityId();
+            $rewardValue = $task->getRewardValue(false);
+            $unitMany = $this->unit->getNameOfMany();
+            $aue = $this->getAdminUserEntity($aueId);
+            $currentBalance = $aue->getBalance();
+            if ($this->dao->confirmTaskDoneByTaskId($taskId, $aueId, $currentBalance, $rewardValue, $unitMany)) {
+                $this->setMessage("Uppgiften har godkänts och saldot har uppdaterats.", MessageType::Success);
+                $this->loadAdminUserEntities();
+                $this->loadTasks();
+            } else {
+                $this->setMessage("Uppgiften kunde inte godkännas.", MessageType::Error);
+            }
         }
     }
 
-    public function editTask($taskId) {
-        //bör ju vara giltig taskId men inget krav på admin.
-        //bör hämta taskinfo och förbereda redigering på sidan
-        //med en submitbutton som uppdaterar databasen.
+    public function updateTask($taskId, $title, $description, $rewardValue, $penaltyValue, $validFrom, $validTo) {
+        $title = ($title) ? $title : "Uppgift";
+        $description = ($description) ? $description : "Uppgiften saknar beskrivning.";
         if ($this->isAllowedToChangeTask($taskId, true)) {
-
-            $this->dao->getTask($taskId);
+            if ($rewardValue < 0) {
+                $this->setMessage("Belöningsvärdet från inte vara under 0.", MessageType::Error);
+            } else if ($penaltyValue > 0) {
+                $this->setMessage("Straffvärdet får inte vara över 0.", MessageType::Error);
+            } else if (strtotime($validFrom) < time()) {
+                $this->setMessage("Uppgifter får inte vara giltiga från och med bakåt i tiden.", MessageType::Error);
+            } else if (strtotime($validFrom) >= strtotime($validTo)) {
+                $this->setMessage("Uppgifter måste ha en positiv giltighetstid.", MessageType::Error);
+            } else {
+                if ($this->dao->updateTask($taskId, $title, $description, $rewardValue, $penaltyValue,
+                    strtotime($validFrom), strtotime($validTo))) {
+                    $this->setMessage("Uppgiften har uppdaterats.", MessageType::Success);
+                } else {
+                    $this->setMessage("Uppgiften kunde inte skapas.", MessageType::Error);
+                }
+            }
+        } else {
+            $this->setMessage("Du saknar rättighet att uppdatera uppgiften.", MessageType::Error);
         }
     }
 
-    //TODO: updating a Task.
-    public function updateTask() {
-        if ($this->isAllowedToChangeTask($taskId, true)) {
-            //$this->dao->updateTask($taskId,...);
+    public function updateTransaction($transactionId, $description, $transactionValue, $shouldChangeSign) {
+        if ($transactionValue == 0) {
+            $this->setMessage("En överföring får inte ha värdet 0.", MessageType::Error);
+        } else if ($this->isAllowedToChangeTransaction($transactionId, false)) {
+            $transaction = $this->getTransaction($transactionId);
+            if ($transaction->getIsPending()) {
+                if ($shouldChangeSign) {
+                    $transactionValue = -$transactionValue;
+                }
+                if ($this->dao->updateTransaction($transactionId, $description, $transactionValue)) {
+                    $this->setMessage("Överföringen har uppdaterats.", MessageType::Success);
+                    $this->loadTransactions();
+                } else {
+                    $this->setMessage("Överföringen kunde inte uppdateras.", MessageType::Error);
+                }
+            } else {
+                $this->setMessage("Ändringar kan bara göras i en överföring som är väntande", MessageType::Error);
+            }
+        } else {
+            $this->setMessage("Rättigheter saknas att göra ändringar i överföringen.", MessageType::Error);
+        }
+
+    }
+
+    public function regretTransaction($transactionId) {
+        if ($this->isAllowedToChangeTransaction($transactionId, false)) {
+            $transaction = $this->getTransaction($transactionId);
+            if ($transaction->getIsPending()) {
+                $this->dao->removeTransaction($transactionId); //regret a pending transaction == remove the transaction
+            } else {
+                $this->setMessage("Endast en överföring som är väntande kan ångras.", MessageType::Error);
+            }
+        } else {
+            $this->setMessage("Rättigheter saknas att göra ångra överföringen.", MessageType::Error);
         }
     }
 
     public function removeTask($taskId) {
+        if ($this->isAllowedToChangeTask($taskId, true)) {
+            if ($this->dao->removeTask($taskId)) {
+                $this->setMessage("Uppgiften har tagits bort", MessageType::Success);
+                $this->loadTasks();
+            } else {
+                $this->setMessage("Uppgiften kunde inte tas bort.", MessageType::Error);
+            }
+        } else {
+            $this->setMessage("Rättigheter saknas för att ta bort uppgiften.", MessageType::Error);
+        }
     }
 
     public function regretMarkTaskDone($taskId) {
         if ($this->isAllowedToChangeTask($taskId, false)) {
             if ($this->dao->markTaskUndone($taskId)) {
-                $this->setMessage("Uppgiften har markerats ogjord.", MessageType::Success);
+                $this->setMessage("Uppgiften har markerats som ej utförd.", MessageType::Success);
+                $this->loadTasks();
             } else {
-                $this->setMessage("Uppgiften kunde inte markeras ogjord.", MessageType::Error);
+                $this->setMessage("Uppgiften kunde inte markeras som ej utförd.", MessageType::Error);
             }
+        } else {
+            $this->setMessage("Rättigheter saknas att markera uppgiften som ej utförd.", MessageType::Error);
         }
     }
 
     public function markTaskDone($taskId) {
         if ($this->isAllowedToChangeTask($taskId, false)) {
             if ($this->dao->markTaskDone($taskId)) {
-                $this->setMessage("Uppgiften har markerats ogjord.", MessageType::Success);
+                $this->setMessage("Uppgiften har markerats som utförd.", MessageType::Success);
+                $this->loadTasks();
             } else {
-                $this->setMessage("Uppgiften kunde inte markeras ogjord.", MessageType::Error);
+                $this->setMessage("Uppgiften kunde inte markeras som utförd.", MessageType::Error);
             }
         }
     }
@@ -492,12 +573,14 @@ class Model {
             $transaction = $this->getTransaction($transactionId);
             $aueId = $transaction->getAdminUserEntityId();
             $transactionValue = $transaction->getTransactionValue(false);
-            $unitMany = $this->unit->getNameOfMeny();
+            $unitMany = $this->unit->getNameOfMany();
             $aue = $this->getAdminUserEntity($aueId);
             $currentBalance = $aue->getBalance();
 
             if ($this->dao->confirmTransaction($transactionId, $aueId, $currentBalance, $transactionValue, $unitMany)) {
                 $this->setMessage("Överföringen har godkänts och saldot har uppdaterats.", MessageType::Success);
+                $this->loadAdminUserEntities();
+                $this->loadTransactions();
             } else {
                 $this->setMessage("Överföringen kunde inte godkännas.", MessageType::Error);
             }
@@ -516,22 +599,31 @@ class Model {
             }
         }
     }
-    public function editTransaction($taskId) {
-    }
-    public function regretTransaction($taskId) {
-    }
-    public function removeTransaction($taskId) {
+
+    public function removeTransaction($transactionId) {
+        if ($this->isAllowedToChangeTransaction($transactionId, true)) {
+            if ($this->dao->removeTransaction($transactionId)) {
+                $this->setMessage("Överföringen har tagits bort", MessageType::Success);
+                $this->loadTasks();
+            } else {
+                $this->setMessage("Överföringen kunde inte tas bort.", MessageType::Error);
+            }
+        } else {
+            $this->setMessage("Rättigheter saknas för att ta bort överföringen.", MessageType::Error);
+        }
     }
 
     public function getTask($taskId) {
         $task = array_values(array_filter($this->tasks, function ($task) use(&$taskId)  {
             return ($task->getId() == $taskId);
         }))[0];
+
         return $task;
     }
+
     public function getTransaction($transactionId) {
         $transaction = array_values(array_filter($this->transactions, function ($transaction) use(&$transactionId)  {
-            return ($transaction->getId() == 2);
+            return ($transaction->getId() == $transactionId);
         }))[0];
 
         return $transaction;
@@ -571,6 +663,7 @@ class Model {
     public function connectAccounts($username, $secretToken) {
         if ($this->dao->connectAccounts($this->user->getId(), $this->isUserAdmin(), $username, $secretToken)) {
             $this->setMessage("Kontona har nu kopplats ihop.", MessageType::Success);
+            $this->loadAdminUserEntities();
         } else {
             $this->setMessage("Ihopkopplingen av kontona misslyckades.", MessageType::Error);
         }
@@ -600,22 +693,29 @@ class Model {
                 } else {
                     $this->setMessage("Överföringen har initierats och väntar på godkännande", MessageType::Success);
                 }
+                $this->loadTransactions();
             } else {
                 $this->setMessage("Överföringen kunde inte skapas", MessageType::Error);
             }
         }
     }
 
-    private function doesAueIdBelongToUser($aueId) {
+    /**
+     * If adminUserEntityId is posted from server, this function can be used
+     * to verify that the currently logged in user is part of corresponding adminUserIdentity
+     * @param $adminUserEntityId
+     * @return bool
+     */
+    private function doesAueIdBelongToUser($adminUserEntityId) {
         if ($this->user->getIsAdmin()) {
             $adminId = $this->user->getId();
-            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$aueId, &$adminId)  {
-                return ($aue->getId() == $aueId && $aue->getAdminsId() == $adminId);
+            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$adminUserEntityId, &$adminId)  {
+                return ($aue->getId() == $adminUserEntityId && $aue->getAdminsId() == $adminId);
             }))[0];
         } else {
             $userId = $this->user->getId();
-            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$aueId, &$userId)  {
-                return ($aue->getId() == $aueId && $aue->getUsersId() == $userId);
+            $aue = array_values(array_filter($this->adminUserEntities, function ($aue) use(&$adminUserEntityId, &$userId)  {
+                return ($aue->getId() == $adminUserEntityId && $aue->getUsersId() == $userId);
             }))[0];
         }
         $isBelonging = ($aue != null);
@@ -635,11 +735,14 @@ class Model {
             $this->setMessage("Straffvärdet får inte vara över 0.", MessageType::Error);
         } else if (strtotime($validFrom) < time()) {
             $this->setMessage("Uppgifter får inte vara giltiga från och med bakåt i tiden.", MessageType::Error);
+        } else if (strtotime($validFrom) >= strtotime($validTo)) {
+            $this->setMessage("Uppgifter måste ha en positiv giltighetstid.", MessageType::Error);
         } else {
             $numberOfSuccessfulRecordsCreated = $this->dao->insertNewTask($adminUserEntityId, $title, $description, $rewardValue, $penaltyValue,
                 strtotime($validFrom), strtotime($validTo), $repeatNumberOfWeeks);
             if ($numberOfSuccessfulRecordsCreated) {
                 $this->setMessage( $numberOfSuccessfulRecordsCreated . " uppgifter har skapats.", MessageType::Success);
+                $this->loadTasks();
             } else {
                 if ($repeatNumberOfWeeks > 1) {
                     $this->setMessage("Uppgifterna kunde inte skapas.", MessageType::Error);

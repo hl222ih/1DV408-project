@@ -16,9 +16,6 @@ class Dao {
     private $connection;
     private $config;
 
-    private $userId;
-    private $mappedUserIds;
-
     public function __construct() {
         $this->config = new DatabaseConfig();
 
@@ -465,7 +462,7 @@ class Dao {
         $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
         $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
         $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
-        $statement->bindParam(':transaction_value', $value, PDO::PARAM_INT);
+        $statement->bindParam(':transaction_value', $value, PDO::PARAM_STR);
         $statement->bindParam(':description', $description, PDO::PARAM_STR);
 
         $isSuccess = $statement->execute();
@@ -510,8 +507,8 @@ class Dao {
             $statement->bindParam(':unit_id', $unitId, PDO::PARAM_INT);
             $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
             $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
-            $statement->bindParam(':reward_value', $rewardValue, PDO::PARAM_INT);
-            $statement->bindParam(':penalty_value', $penaltyValue, PDO::PARAM_INT);
+            $statement->bindParam(':reward_value', $rewardValue, PDO::PARAM_STR);
+            $statement->bindParam(':penalty_value', $penaltyValue, PDO::PARAM_STR);
             $statement->bindParam(':title', $title, PDO::PARAM_STR);
             $statement->bindParam(':description', $description, PDO::PARAM_STR);
             $statement->bindParam(':valid_from', $validFromForMySql, PDO::PARAM_STR);
@@ -587,7 +584,7 @@ class Dao {
         $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
         $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
         $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
-        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+        $statement->bindParam(':id', $transactionId, PDO::PARAM_INT);
 
         $isSuccess = $statement->execute();
 
@@ -619,7 +616,7 @@ class Dao {
         $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
         $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
         $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
-        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+        $statement->bindParam(':id', $transactionId, PDO::PARAM_INT);
 
         $isSuccess = $statement->execute();
 
@@ -655,7 +652,7 @@ class Dao {
                         VALUES (:user_to_user_id, :message)
                         ");
         $statement->bindParam(':user_to_user_id', $userToUserId, PDO::PARAM_INT);
-        $statement->bindParam(':message', $fieldMessage, PDO::PARAM_STR);
+        $statement->bindParam(':message', $logMessage, PDO::PARAM_STR);
 
         $isSuccess = $statement->execute();
 
@@ -691,5 +688,125 @@ class Dao {
         }
 
         return $logItems;
+    }
+
+    public function confirmTaskDoneByTaskId($taskId, $userToUserId, $currentBalance, $rewardValue, $unit) {
+        $tableTask = "task";
+        $fieldTimeOfResponse = "time_of_response";
+        $fieldId = "id";
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+
+        $timeOfResponseForMySql = date('Y-m-d H:i:s', time());
+        $isConfirmed = 1;
+        $isDenied = 0;
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableTask
+                    SET $fieldTimeOfResponse = :time_of_response, $fieldIsConfirmed = :is_confirmed, $fieldIsDenied = :is_denied
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+        $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
+        $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
+
+        $isSuccess = $statement->execute();
+
+        if ($isSuccess) {
+            $newBalance = $currentBalance + $rewardValue;
+            if ($this->updateBalance($userToUserId, $newBalance)) {
+                //should probably be more informative description of event
+                $this->insertLogItem($userToUserId, "En uppgift har utförts och ändrade saldot med " . $rewardValue . " " . $unit . " till " . $newBalance . " " . $unit);
+            }
+        }
+        return $isSuccess;
+    }
+
+    public function removeTask($taskId) {
+        $tableTask = "task";
+        $fieldId = "id";
+
+        $statement = $this->connection->prepare("
+                    DELETE FROM $tableTask
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function removeTransaction($transactionId) {
+        $tableTransaction = "transaction";
+        $fieldId = "id";
+
+        $statement = $this->connection->prepare("
+                    DELETE FROM $tableTransaction
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':id', $transactionId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function updateTransaction($transactionId, $description, $value) {
+        $tableTransaction = "transaction";
+        $fieldTimeOfRequest = "time_of_request";
+        $fieldId = "id";
+        $fieldDescription = "description";
+        $fieldTransactionValue = "transaction_value";
+
+        $timeOfRequestForMySql = date('Y-m-d H:i:s', time());
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableTransaction
+                    SET $fieldTimeOfRequest = :time_of_request, $fieldTransactionValue = :transaction_value,
+                    $fieldDescription = :description
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':time_of_request', $timeOfRequestForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':id', $transactionId, PDO::PARAM_INT);
+        $statement->bindParam(':transaction_value', $value, PDO::PARAM_STR);
+        $statement->bindParam(':description', $description, PDO::PARAM_STR);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function updateTask($taskId, $title, $description, $rewardValue, $penaltyValue, $validFrom, $validTo) {
+        $tableTask = "task";
+        $fieldTitle = "title";
+        $fieldDescription = "description";
+        $fieldRewardValue = "reward_value";
+        $fieldPenaltyValue = "penalty_value";
+        $fieldValidFrom = "valid_from";
+        $fieldValidTo = "valid_to";
+        $fieldId = "id";
+
+        $validFromForMySql = date('Y-m-d H:i:s', $validFrom);
+        $validToForMySql = date('Y-m-d H:i:s', $validTo);
+
+        $statement = $this->connection->prepare("
+                UPDATE $tableTask
+                SET $fieldTitle = :title, $fieldDescription = :description, $fieldRewardValue = :reward_value,
+                $fieldPenaltyValue = :penalty_value, $fieldValidFrom = :valid_from, $fieldValidTo = :valid_to
+                WHERE $fieldId = :id
+                ");
+        $statement->bindParam(':reward_value', $rewardValue, PDO::PARAM_INT);
+        $statement->bindParam(':penalty_value', $penaltyValue, PDO::PARAM_INT);
+        $statement->bindParam(':title', $title, PDO::PARAM_STR);
+        $statement->bindParam(':description', $description, PDO::PARAM_STR);
+        $statement->bindParam(':valid_from', $validFromForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':valid_to', $validToForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
     }
 }

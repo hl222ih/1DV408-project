@@ -65,4 +65,17 @@ class Task extends Event {
         }
         return $value;
     }
+
+    public function getValidFrom() {
+        return $this->validFrom;
+    }
+    public function getValidFromAsDateTimeString() {
+        return date('Y-m-d H:i:s', $this->validFrom);
+    }
+    public function getValidTo() {
+        return $this->validTo;
+    }
+    public function getValidToAsDateTimeString() {
+        return date('Y-m-d H:i:s', $this->validTo);
+    }
 }
