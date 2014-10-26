@@ -6,6 +6,14 @@ use BoostMyAllowanceApp\Model\Model;
 use BoostMyAllowanceApp\Model\Task;
 use BoostMyAllowanceApp\Model\Transaction;
 
+/**
+ * Class EventsView
+ *
+ * This if only used for admins to display Transactions (normally handled by TransactionsView)
+ * and Tasks (normally handled by TasksView) in one View altogether.
+
+ * @package BoostMyAllowanceApp\View
+ */
 class EventsView extends View {
 
     private static $getIsPendingKey = "onlypending";
@@ -23,6 +31,13 @@ class EventsView extends View {
         }
     }
 
+    /**
+     * Contains the entire page's html for the current view.
+     * Contains the entire page's html for the current view.
+     * Is mainly based on shared html in View that this class has inherited.
+     *
+     * @return string
+     */
     function getHtml() {
 $html = $this->getHtmlForEventEdit() . '
 <div class="panel panel-info">

@@ -12,6 +12,12 @@ require_once("partials/head.php");
 require_once("partials/footer.php");
 require_once("partials/navigation.php");
 
+/**
+ * Class View
+ *
+ * Abstract class that should be used by nearly all views (not StartView which is only used for input from POST:s)
+ * @package BoostMyAllowanceApp\View
+ */
 abstract class View extends ViewKeys {
 
     private $title;
@@ -337,7 +343,7 @@ abstract class View extends ViewKeys {
                     if ($isNewTransaction) {
                         $isDeposit = true;
                     } else {
-                        $isDeposit = ($event->getTransactionValue($isAdmin) > 0);
+                        $isDeposit = ($event->getTransactionValue(false) > 0);
                     }
                     if ($isAdmin) {
                         $html .= '

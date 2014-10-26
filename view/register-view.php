@@ -10,6 +10,10 @@ class RegisterView extends View {
         parent::__construct($model, "Register");
     }
 
+    /**
+     * Contains the entire page's html for the current view.
+     * @return string
+     */
     function getHtml() {
         $html = '
 <div class="panel panel-info">
@@ -24,7 +28,8 @@ class RegisterView extends View {
                     type="text"
                     name="' . self::$postNameKey . '"
                     id="nameId"
-                    value="' . $this->model->getLastPostedName() . '" autofocus />
+                    value="' . $this->model->getLastPostedName() . '" autofocus
+                    required/>
             </div>
             <div class="form-group">
                 <label for="usernameId">Användarnamn:</label>
@@ -32,21 +37,24 @@ class RegisterView extends View {
                     type="text"
                     name="' . self::$postUsernameKey . '"
                     id="usernameId"
-                    value="' . $this->model->getLastPostedUsername() . '" />
+                    value="' . $this->model->getLastPostedUsername() . '"
+                    required/>
             </div>
             <div class="form-group">
                 <label for="passwordId">Lösenord:</label>
                 <input class="form-control"
                     type="password"
                     name="' . self::$postPasswordKey . '"
-                    id="passwordId" />
+                    id="passwordId"
+                    required/>
             </div>
             <div class="form-group">
                 <label for="passwordAgainId">Lösenord (igen):</label>
                 <input class="form-control"
                     type="password"
                     name="' . self::$postPasswordAgainKey . '"
-                    id="passwordAgainId" />
+                    id="passwordAgainId"
+                    required/>
             </div>
             <div class="checkbox">
                 <label>

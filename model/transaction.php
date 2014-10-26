@@ -18,6 +18,13 @@ class Transaction extends Event {
         return !$this->isDenied && !$this->isConfirmed && $this->timeOfRequest;
     }
 
+    /**
+     * The transaction may be positive for the parent at the same time as negative for the child and vice versa.
+     * Returns the size of the transaction with sign depending on if the user is admin or not.
+     *
+     * @param $isAdmin
+     * @return mixed
+     */
     public function getTransactionValue($isAdmin) {
         $value = $this->transactionValue;
         if ($isAdmin) {
@@ -26,6 +33,13 @@ class Transaction extends Event {
         return $value;
     }
 
+    /**
+     * The transaction may be positive for the parent at the same time as negative for the child and vice versa.
+     *
+     * Takes into consideration if the transaction is confirmed or not. If not, the actual value will be 0.
+     * @param $isAdmin
+     * @return int
+     */
     public function getValue($isAdmin) {
         $value = 0;
 

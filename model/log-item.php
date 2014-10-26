@@ -2,7 +2,12 @@
 
 namespace BoostMyAllowanceApp\Model;
 
-
+/**
+ * Class LogItem
+ * Quite straight forward. Log messages for balance changing events happening.
+ * Could be much more user friendly than what is implemented at the moment.
+ * @package BoostMyAllowanceApp\Model
+ */
 class LogItem {
 
     private $id;

@@ -4,6 +4,15 @@ namespace BoostMyAllowanceApp\View;
 
 use BoostMyAllowanceApp\Model\Model;
 
+/**
+ * Class StartView
+ * This is a special view class that is used to handle input from made POST:s (and GET:s), no matter
+ * which page the POST:s (or GET:s) are made from.
+ * The provided interface with methods helps the controller to decide which "real" view to load and display aswell
+ * as call functions in the model with information provided by the GET:s and POST:s.
+ *
+ * @package BoostMyAllowanceApp\View
+ */
 class StartView extends ViewKeys {
     static private $cookieEncryptedPasswordKey = "View::EncryptedPassword";
     static private $cookieUsernameKey = "View::Username";

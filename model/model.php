@@ -15,6 +15,13 @@ require_once("user.php");
 require_once("message-type.php");
 require_once("message.php");
 
+/**
+ * Class Model
+ *
+ * This class contains all model objects and is used to get information from them.
+ *
+ * @package BoostMyAllowanceApp\Model
+ */
 class Model {
 
     const APP_NAME = "BoostMyAllowance!";
@@ -47,6 +54,7 @@ class Model {
                 if (!$this->isSessionIntegrityOk()) {
                     $this->logoutUser();
                 } else {
+                    //load all model objects
                     $this->unit = new Unit("krona", "kronor", "kr");
                     $this->loadUser();
                     $this->loadAdminUserEntities();
@@ -60,6 +68,12 @@ class Model {
             throw new \Exception("Ooops! Tyvärr var det något som inte gick som det var tänkt. " . $e->getMessage(), MessageType::Error);
         }
     }
+
+    /**
+     * "load" methods.
+     *
+     * Retrieves model objects from Dao who creates them when retrieving the information from the database and returns them.
+     */
 
     public function loadUser() {
         $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
@@ -91,17 +105,31 @@ class Model {
         return $match;
     }
 
+    /**
+     * Preventing session hijacking by checking userAgent of users browser and users ip address with information saved in session.
+     * @return bool
+     */
     public function isSessionIntegrityOk() {
         return $this->doesUserAgentMatch() && $this->doesIPMatch();
     }
 
     /**
+     * checks if user is logged in according to session. Can only be trusted if session integrity has been checked to be ok first.
      * @return bool
      */
     public function isUserLoggedIn() {
         return $this->user->isLoggedIn();
     }
 
+    /**
+     * Session stores a message that will be displayed once the message is retrieved my the controller along with the loaded view.
+     * It should then be unset, so that it isn't displayed more than once.
+     *
+     * @param $message - the text which is displayed
+     * @param int $messageType - a number 0-3 which corresponds to info, success, error and warning which
+     *                           will be translated to bootstrap classes which normally will mean
+     *                           background-colors of blue, green, red and yellow respectively.
+     */
     public function setMessage($message, $messageType = MessageType::Info) {
         $_SESSION[self::$sessionFeedbackMessageKey] = serialize(new Message($message, $messageType));
     }
@@ -123,6 +151,14 @@ class Model {
         return md5($salt.$password);
     }
 
+    /**
+     * Function to try to login with information saved in cookies on the client.
+     * It will check for cookie password match against the encrypted password saved
+     * on the server and also check that the cookie hasn't expired according to
+     * the 30 days expiration time that is saved on the server.
+     * @param $username
+     * @param $encryptedCookiePassword
+     */
     public function cookieLogin($username, $encryptedCookiePassword) {
         $username = trim($username);
         $this->setLastPostedUsername($username);
@@ -151,6 +187,13 @@ class Model {
         }
     }
 
+    /**
+     * The standard login function used when user uses the login form. Setting feedback messages when login fails.
+     *
+     * @param $username
+     * @param $password
+     * @param $autoLogin - if user checked that he wants to remain logged in (with the help of cookies)
+     */
     public function login($username, $password, $autoLogin) {
         $isSuccess = false;
         $username = trim($username);
@@ -210,6 +253,11 @@ class Model {
         return isset($_SESSION[self::$sessionAutoLoginCheckedKey]) ? $_SESSION[self::$sessionAutoLoginCheckedKey] : false;
     }
 
+    /**
+     * Pretty well used function from the views because the views will display different content for a normal user (the child) and
+     * for an admin user (the parent).
+     * @return bool
+     */
     public function isUserAdmin() {
         return $this->user->getIsAdmin();
     }
@@ -238,6 +286,9 @@ class Model {
         return $this->user->getName();
     }
 
+    /*
+     * Used to keep track of the current users username, even when he is not logged in.
+     */
     public function setLastPostedUsername($username) {
         $username = trim($username);
 
@@ -270,11 +321,9 @@ class Model {
     }
 
     public function registerNewUser($username, $password, $passwordAgain, $name, $createAdminAccount) {
-        //TODO: verify user data
         $isInputOk = true;
         $isSuccess = false;
 
-        //for starters...
         if ($password != $passwordAgain) {
             $isInputOk = false;
             $this->setMessage("Lösenorden matchar inte.", MessageType::Error);
@@ -303,6 +352,7 @@ class Model {
     public function getEvents() {
         $events = array();
 
+        //only admins use the combined view for transactions and tasks to easier to handle confirmation etc of events.
         if ($this->user->getIsAdmin()) {
             $events = array_merge($this->tasks, $this->transactions);
         }
@@ -312,10 +362,19 @@ class Model {
         return $events;
     }
 
+    /*
+     * Supposed to sort events (transactions and/or tasks) in chronological order
+     */
     private function compareEventsByTime(Event $e1, Event $e2) {
-        return $e1->getTimeOfRequest() - $e2->getTimeOfRequest();
+        return $e2->getTimeOfRequest() - $e1->getTimeOfRequest();
     }
 
+    /**
+     * A pending event may be different if it is a transaction or a task, but since they both have this
+     * function getting all events works just fine. Important for the admin to be able to filter all
+     * transactions and tasks that doesn't need immediate attention.
+     * @return array
+     */
     public function getPendingEvents() {
         $events = $this->getEvents();
 
@@ -331,6 +390,10 @@ class Model {
         return $this->tasks;
     }
 
+    /**
+     * filters tasks and won't return old tasks that aren't "active" anymore.
+     * @return array
+     */
     public function getUpcomingTasks() {
         $upcomingTasks = array_filter($this->tasks, function($task) {
             return $task->getIsUpcoming();
@@ -346,6 +409,16 @@ class Model {
 
         return $this->transactions;
     }
+
+    /**
+     * The adminUserEntity is holding the connection between a user and the administrator (the child and parent).
+     * This function will return this entity based on id.
+     *
+     * Quite frequently used.
+     *
+     * @param $adminUserEntityId
+     * @return mixed
+     */
     public function getAdminUserEntity($adminUserEntityId) {
         $aue = array_values(array_filter($this->adminUserEntities, function($aue) use(&$adminUserEntityId) {
             return $aue->getId() == $adminUserEntityId;
@@ -451,6 +524,10 @@ class Model {
         return $isAllowed;
     }
 
+
+    //basically all functions below are performing CRUD operations on the database.
+    //And sets messages for feedback to the user.
+
     public function confirmTaskDone($taskId) {
         if ($this->isAllowedToChangeTask($taskId, true)) {
             $task = $this->getTask($taskId);
@@ -485,6 +562,7 @@ class Model {
                 if ($this->dao->updateTask($taskId, $title, $description, $rewardValue, $penaltyValue,
                     strtotime($validFrom), strtotime($validTo))) {
                     $this->setMessage("Uppgiften har uppdaterats.", MessageType::Success);
+                    $this->loadTasks();
                 } else {
                     $this->setMessage("Uppgiften kunde inte skapas.", MessageType::Error);
                 }
@@ -523,6 +601,8 @@ class Model {
             $transaction = $this->getTransaction($transactionId);
             if ($transaction->getIsPending()) {
                 $this->dao->removeTransaction($transactionId); //regret a pending transaction == remove the transaction
+                $this->setMessage("Överföringen har tagits bort.", MessageType::Success);
+                $this->loadTransactions();
             } else {
                 $this->setMessage("Endast en överföring som är väntande kan ångras.", MessageType::Error);
             }
@@ -604,7 +684,7 @@ class Model {
         if ($this->isAllowedToChangeTransaction($transactionId, true)) {
             if ($this->dao->removeTransaction($transactionId)) {
                 $this->setMessage("Överföringen har tagits bort", MessageType::Success);
-                $this->loadTasks();
+                $this->loadTransactions();
             } else {
                 $this->setMessage("Överföringen kunde inte tas bort.", MessageType::Error);
             }
@@ -741,7 +821,11 @@ class Model {
             $numberOfSuccessfulRecordsCreated = $this->dao->insertNewTask($adminUserEntityId, $title, $description, $rewardValue, $penaltyValue,
                 strtotime($validFrom), strtotime($validTo), $repeatNumberOfWeeks);
             if ($numberOfSuccessfulRecordsCreated) {
-                $this->setMessage( $numberOfSuccessfulRecordsCreated . " uppgifter har skapats.", MessageType::Success);
+                if ($numberOfSuccessfulRecordsCreated > 1) {
+                    $this->setMessage( $numberOfSuccessfulRecordsCreated . " uppgifter har skapats.", MessageType::Success);
+                } else {
+                    $this->setMessage( $numberOfSuccessfulRecordsCreated . " uppgift har skapats.", MessageType::Success);
+                }
                 $this->loadTasks();
             } else {
                 if ($repeatNumberOfWeeks > 1) {

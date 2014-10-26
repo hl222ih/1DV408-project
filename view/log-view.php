@@ -10,6 +10,10 @@ class LogView extends View {
         parent::__construct($model, "Log");
     }
 
+    /**
+     * Contains the entire page's html for the current view.
+     * @return string
+     */
     function getHtml() {
         $html = '
             <div class="panel panel-info">

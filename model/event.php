@@ -9,10 +9,16 @@ abstract class Event {
     protected $adminUserEntityId;
     protected $unitId;
 
-    protected $timeOfRequest;
+    protected $timeOfRequest; //a request will be made when the child has done the task and wants the task reward or transaction amount
     protected $timeOfResponse;
 
+    //The parent will confirm the event (task or transaction) and release the award or
+    //transaction amount from his or her account to the child's account
     protected $isConfirmed;
+    //The event can be denied which may give the child a penalty for a task,
+    //while denial of a transaction will just make it void.
+    //Unfortunately at the moment, the application lacks some logic to automatically
+    //deny a task when the time runs out.
     protected $isDenied;
 
     protected $title;
@@ -88,7 +94,9 @@ abstract class Event {
         return $this->id;
     }
 
+    //different implementation in Task and Transaction respectively, therefore abstract here.
     abstract function getValue($isAdmin);
 
+    //different implementation in Task and Transaction respectively, therefore abstract here.
     abstract function getIsPending();
 }

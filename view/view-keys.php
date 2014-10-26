@@ -2,7 +2,14 @@
 
 namespace BoostMyAllowanceApp\View;
 
-
+/**
+ * Class ViewKeys
+ *
+ * Many variables used in different $_POST buttons on different pages.
+ * This class should be inherited by all other view classes.
+ *
+ * @package BoostMyAllowanceApp\View
+ */
 class ViewKeys {
     protected static $postLoginButtonNameKey = 'View::LoginButtonName';
     protected static $postRegisterButtonNameKey = 'View::RegisterButtonName';
@@ -44,7 +51,6 @@ class ViewKeys {
     protected static $postConnectAccountUsernameKey = "View::ConnectAccountUsername";
     protected static $postConnectAccountTokenKey = "View::ConnectAccountToken";
     protected static $postConnectAccountsButtonNameKey = "View::ConnectAccounts";
-    //protected static $postAdminUserEntityIdKey = "View::AdminUserEntityId";
 
     protected static $postExecuteNewTransactionForAueIdButtonNameKey = "View::ExecuteNewTransactionForAueId";
     protected static $postExecuteNewTaskForAueIdButtonNameKey = "View::ExecuteNewTaskForAueId";
