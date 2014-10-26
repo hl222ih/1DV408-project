@@ -1,5 +1,5 @@
 
-
+```
 Use Cases
 Test report 2014-10-26
 Database UML diagram
@@ -17,7 +17,7 @@ https://drive.google.com/open?id=0B2xSA_T08RU_R0FlTzRPRkRCaWs&authuser=0
 2. Import the structure with help from the database dump.
 3. Make changes in /dao/database-config.php which looks like this:
 
-```
+
 -------------------------------
 <?php
 
