@@ -123,6 +123,7 @@ class Controller {
                     $this->startView->getConnectAccountName(),
                     $this->startView->getConnectAccountToken()
                 );
+                $this->model->loadAdminUserEntities();
             } else if ($this->startView->wasExecuteNewTransactionForAueIdButtonClicked()) {
                 $this->model->createNewTransaction(
                     $this->startView->getAdminUserEntityId(),
@@ -130,7 +131,8 @@ class Controller {
                     $this->startView->getTransactionValue(),
                     $this->startView->getChangeValue()
                 );
-                $this->startView->redirectPage(); //reload to update changes
+                $this->model->loadTransactions();
+//                $this->startView->redirectPage(); //reload to update changes
             } else if ($this->startView->wasExecuteNewTaskForAueIdButtonClicked()) {
                 $this->model->createNewTask(
                     $this->startView->getAdminUserEntityId(),
@@ -142,7 +144,8 @@ class Controller {
                     $this->startView->getValidTo(),
                     $this->startView->getRepeatNumberOfWeeks()
                 );
-                $this->startView->redirectPage(); //reload to update changes
+                $this->model->loadTasks();
+//                $this->startView->redirectPage(); //reload to update changes
             }
 
             $requestedPage = $this->startView->getRequestedPage();

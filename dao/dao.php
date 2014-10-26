@@ -7,6 +7,7 @@ use BoostMyAllowanceApp\Model\User;
 use BoostMyAllowanceApp\Model\Task;
 use BoostMyAllowanceApp\Model\Transaction;
 use BoostMyAllowanceApp\Model\AdminUserEntity;
+use BoostMyAllowanceApp\Model\LogItem;
 
 require_once("database-config.php");
 
@@ -32,10 +33,10 @@ class Dao {
         }
     }
     public function doesUserExist($username) {
-        $statement = $this->connection->prepare('
+        $statement = $this->connection->prepare("
                         SELECT 1
                         FROM user
-                        WHERE username = :username');
+                        WHERE username = :username");
         $statement->bindParam(':username', $username, PDO::PARAM_STR);
         $statement->execute();
 
@@ -297,6 +298,7 @@ class Dao {
         $aliasTableParent = "table_parent";
         $aliasChildId = "child_id";
         $aliasParentId = "parent_id";
+        $fieldBalance = "balance";
 
         $userToUserIds = $this->getUserToUserIds($userId);
 
@@ -307,14 +309,15 @@ class Dao {
                 SELECT $tableUserToUser.$fieldChildUserId AS $aliasChildId,
                   $tableUserToUser.$fieldParentUserId AS $aliasParentId,
                   $aliasTableChild.$fieldName AS $aliasChildsName,
-                  $aliasTableParent.$fieldName AS $aliasParentsName
+                  $aliasTableParent.$fieldName AS $aliasParentsName,
+                  $fieldBalance
                 FROM $tableUser $aliasTableChild
                 INNER JOIN $tableUserToUser ON $aliasTableChild.$fieldId = $tableUserToUser.$fieldChildUserId
                 INNER JOIN $tableUser $aliasTableParent ON $aliasTableParent.$fieldId = $tableUserToUser.$fieldParentUserId
                 WHERE $tableUserToUser.$fieldId = $userToUserId");
             $statement->execute();
             $row = $statement->fetch(PDO::FETCH_ASSOC);
-            $adminToUserEntity = new AdminUserEntity($userToUserId, $row[$aliasChildId], $row[$aliasParentId], $row[$aliasChildsName], $row[$aliasParentsName]);
+            $adminToUserEntity = new AdminUserEntity($userToUserId, $row[$aliasChildId], $row[$aliasParentId], $row[$aliasChildsName], $row[$aliasParentsName], $row[$fieldBalance]);
 
             array_push($adminToUserEntities, $adminToUserEntity);
         }
@@ -518,12 +521,175 @@ class Dao {
             if ($isSuccess) {
                 $countSuccess++;
             }
-            var_dump($statement->errorInfo());
-            echo PHP_EOL;
             $validFrom = $validFrom  + $secondsInAWeek;
             $validTo = $validTo  + $secondsInAWeek;
         }
 
         return $countSuccess;
+    }
+
+    public function markTaskDone($taskId) {
+        $tableTask = "task";
+        $fieldTimeOfRequest = "time_of_request";
+        $fieldId = "id";
+
+        $timeOfRequestForMySql = date('Y-m-d H:i:s', time());
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableTask
+                    SET $fieldTimeOfRequest = :time_of_request
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':time_of_request', $timeOfRequestForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function markTaskUndone($taskId) {
+        $tableTask = "task";
+        $fieldTimeOfRequest = "time_of_request";
+        $fieldId = "id";
+
+        $timeOfRequestForMySql = "0000-00-00 00:00:00";
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableTask
+                    SET $fieldTimeOfRequest = :time_of_request
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':time_of_request', $timeOfRequestForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function confirmTransaction($transactionId, $userToUserId, $currentBalance, $transactionValue, $unit) {
+        $tableTransaction = "transaction";
+        $fieldTimeOfResponse = "time_of_response";
+        $fieldId = "id";
+
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+
+        $isConfirmed = 1;
+        $timeOfResponseForMySql = date('Y-m-d H:i:s', time());
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableTransaction
+                    SET $fieldTimeOfResponse = :time_of_response, $fieldIsConfirmed = :is_confirmed, $fieldIsDenied = :is_denied
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
+        $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        if ($isSuccess) {
+            $newBalance = $currentBalance + $transactionValue;
+            if ($this->updateBalance($userToUserId, $newBalance)) {
+                $this->insertLogItem($userToUserId, "En överföring genomfördes och ändrade saldot med " . $transactionValue . " " . $unit . " till " . $newBalance . " " . $unit);
+            }
+        }
+        return $isSuccess;
+    }
+
+    public function denyTransaction($transactionId) {
+        $tableTransaction = "transaction";
+        $fieldTimeOfResponse = "time_of_response";
+        $fieldId = "id";
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+
+        $isConfirmed = 0;
+        $isDenied = 1;
+        $timeOfResponseForMySql = date('Y-m-d H:i:s', time());
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableTransaction
+                    SET $fieldTimeOfResponse = :time_of_response, $fieldIsConfirmed = :is_confirmed, $fieldIsDenied = :is_denied
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':time_of_response', $timeOfResponseForMySql, PDO::PARAM_STR);
+        $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
+        $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
+        $statement->bindParam(':id', $taskId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function updateBalance($userToUserId, $newBalance) {
+        $tableUserToUser = "user_to_user";
+        $fieldBalance = "balance";
+        $fieldId = "id";
+
+        $statement = $this->connection->prepare("
+                    UPDATE $tableUserToUser
+                    SET $fieldBalance = :balance
+                    WHERE $fieldId = :id
+                    ");
+        $statement->bindParam(':balance', $newBalance, PDO::PARAM_STR);
+        $statement->bindParam(':id', $userToUserId, PDO::PARAM_INT);
+
+        $isSuccess = $statement->execute();
+
+
+        return $isSuccess;
+    }
+
+    private function insertLogItem($userToUserId, $logMessage) {
+        $tableLogItem = "log_item";
+        $fieldUserToUserId = "user_to_user_id";
+        $fieldMessage = "message";
+
+        $statement = $this->connection->prepare("
+                        INSERT INTO $tableLogItem ($fieldUserToUserId, $fieldMessage)
+                        VALUES (:user_to_user_id, :message)
+                        ");
+        $statement->bindParam(':user_to_user_id', $userToUserId, PDO::PARAM_INT);
+        $statement->bindParam(':message', $fieldMessage, PDO::PARAM_STR);
+
+        $isSuccess = $statement->execute();
+
+        return $isSuccess;
+    }
+
+    public function getLogItemsByUserId($userId) {
+        $tableLogItem = "log_item";
+        $fieldId = "id";
+        $fieldUserToUserId = "user_to_user_id";
+        $fieldMessage = "message";
+        $fieldTimeOfLog = "time_of_log";
+
+        $userToUserIds = $this->getUserToUserIds($userId);
+
+        $logItems = array();
+
+        foreach ($userToUserIds as $userToUserId) {
+
+            $statement = $this->connection->prepare("
+                            SELECT *
+                            FROM $tableLogItem
+                            WHERE :user_to_user_id = $fieldUserToUserId
+                            ");
+            $statement->bindParam(':user_to_user_id', $userToUserId, PDO::PARAM_INT);
+
+            $statement->execute();
+
+            while ($row = $statement->fetch(PDO::FETCH_ASSOC)) {
+                $logItem = new LogItem($row[$fieldId], $row[$fieldUserToUserId], $row[$fieldMessage], $row[$fieldTimeOfLog]);
+                array_push($logItems, $logItem);
+            }
+        }
+
+        return $logItems;
     }
 }

@@ -37,6 +37,7 @@ class Model {
     private $unit;
     private $tasks;
     private $transactions;
+    private $logItems;
 
     public function __construct() {
         try {
@@ -47,19 +48,33 @@ class Model {
                     $this->logoutUser();
                 } else {
                     $this->unit = new Unit("krona", "kronor", "kr");
-                    $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
-                    $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
+                    $this->loadUser();
+                    $this->loadAdminUserEntities();
                     $this->setActiveAdminUserEntityId(0); //visa alla anslutna aue:s som default
-
-                    //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
-                    //TODO: borde bara hämta innehåll som är väsentligt för vyn
-                    $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
-                    $this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
+                    $this->loadTasks();
+                    $this->loadTransactions();
+                    $this->loadLogItems();
                 }
             }
         } catch (\Exception $e) {
             throw new \Exception("Ooops! Tyvärr var det något som inte gick som det var tänkt. " . $e->getMessage(), MessageType::Error);
         }
+    }
+
+    public function loadUser() {
+        $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
+    }
+    public function loadAdminUserEntities() {
+        $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
+    }
+    public function loadTasks() {
+        $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
+    }
+    public function loadTransactions() {
+        $this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
+    }
+    public function loadLogItems() {
+        $this->logItems = $this->dao->getLogItemsByUserId($this->user->getId());
     }
 
     private function doesUserAgentMatch() {
@@ -331,12 +346,16 @@ class Model {
 
         return $this->transactions;
     }
-
-    public function getParentsName($adminUserEntityId) {
-
+    public function getAdminUserEntity($adminUserEntityId) {
         $aue = array_values(array_filter($this->adminUserEntities, function($aue) use(&$adminUserEntityId) {
             return $aue->getId() == $adminUserEntityId;
         }))[0];
+
+        return $aue;
+    }
+    public function getParentsName($adminUserEntityId) {
+
+        $aue = $this->getAdminUserEntity($adminUserEntityId);
 
         $parentsName = "name not found";
         if ($aue) {
@@ -403,6 +422,25 @@ class Model {
         return $isAllowed;
     }
 
+    private function isAllowedToChangeTransaction($transactionId, $needToBeAdmin) {
+        $isAllowed = true;
+        if ($needToBeAdmin) {
+            if (!$this->isUserAdmin())
+            {
+                $this->setMessage("Du saknar rättigheter att göra ändringar i överföringar.", MessageType::Error);
+                $isAllowed = false;
+            }
+        }
+        if (!array_filter($this->transactions, function ($transaction) use(&$transactionId)  {
+            return ($transaction->getId() == $transactionId);
+        })) {
+            $isAllowed = false;
+            $this->setMessage("Åtkomst nekad för aktuell överföring.", MessageType::Error);
+        };
+
+        return $isAllowed;
+    }
+
     public function confirmTaskDone($taskId) {
         if ($this->isAllowedToChangeTask($taskId, true)) {
             $this->dao->comfirmTaskDoneByTaskId($taskId);
@@ -430,10 +468,53 @@ class Model {
     }
 
     public function regretMarkTaskDone($taskId) {
+        if ($this->isAllowedToChangeTask($taskId, false)) {
+            if ($this->dao->markTaskUndone($taskId)) {
+                $this->setMessage("Uppgiften har markerats ogjord.", MessageType::Success);
+            } else {
+                $this->setMessage("Uppgiften kunde inte markeras ogjord.", MessageType::Error);
+            }
+        }
     }
+
     public function markTaskDone($taskId) {
+        if ($this->isAllowedToChangeTask($taskId, false)) {
+            if ($this->dao->markTaskDone($taskId)) {
+                $this->setMessage("Uppgiften har markerats ogjord.", MessageType::Success);
+            } else {
+                $this->setMessage("Uppgiften kunde inte markeras ogjord.", MessageType::Error);
+            }
+        }
     }
-    public function confirmTransaction($taskId) {
+
+    public function confirmTransaction($transactionId) {
+        if ($this->isAllowedToChangeTransaction($transactionId, true)) {
+            $transaction = $this->getTransaction($transactionId);
+            $aueId = $transaction->getAdminUserEntityId();
+            $transactionValue = $transaction->getTransactionValue(false);
+            $unitMany = $this->unit->getNameOfMeny();
+            $aue = $this->getAdminUserEntity($aueId);
+            $currentBalance = $aue->getBalance();
+
+            if ($this->dao->confirmTransaction($transactionId, $aueId, $currentBalance, $transactionValue, $unitMany)) {
+                $this->setMessage("Överföringen har godkänts och saldot har uppdaterats.", MessageType::Success);
+            } else {
+                $this->setMessage("Överföringen kunde inte godkännas.", MessageType::Error);
+            }
+        }
+    }
+
+    public function denyTransaction($transactionId) {
+        if ($this->isAllowedToChangeTransaction($transactionId, true)) {
+            $transaction = $this->getTransaction($transactionId);
+            if ($transaction->getIsDenied()) {
+                $this->setMessage("Överföringen är redan nekad", MessageType::Error);
+            } else if ($this->dao->denyTransaction($transactionId)) {
+                $this->setMessage("Överföringen har markerats nekad", MessageType::Success);
+            } else {
+                $this->setMessage("Överföringen kunde inte markeras nekad", MessageType::Error);
+            }
+        }
     }
     public function editTransaction($taskId) {
     }
@@ -567,5 +648,9 @@ class Model {
                 }
             }
         }
+    }
+
+    public function getLogItems() {
+        return $this->logItems;
     }
 }

@@ -14,7 +14,7 @@ class AdminUserEntity {
 
     private $balance;
 
-    public function __construct($id, $userId, $adminId, $usersName, $adminsName, $balance = 5) {
+    public function __construct($id, $userId, $adminId, $usersName, $adminsName, $balance) {
         $this->id = $id;
         $this->userId = $userId;
         $this->adminId = $adminId;

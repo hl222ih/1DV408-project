@@ -35,8 +35,8 @@ class StartView extends ViewKeys {
         $this->aueId = (isset($_POST[self::$postChangeAdminUserEntityIdKey]) ? $_POST[self::$postChangeAdminUserEntityIdKey] : 0);
         $this->connectAccountName = (isset($_POST[self::$postConnectAccountUsernameKey]) ? $_POST[self::$postConnectAccountUsernameKey] : "");
         $this->connectAccountToken = (isset($_POST[self::$postConnectAccountTokenKey]) ? $_POST[self::$postConnectAccountTokenKey] : "");
-        $this->aueId = isset($_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey] : 0;
-        $this->aueId = isset($_POST[self::$postExecuteNewTaskForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTaskForAueIdButtonNameKey] : 0;
+        $this->aueId = isset($_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey] : $this->aueId;
+        $this->aueId = isset($_POST[self::$postExecuteNewTaskForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTaskForAueIdButtonNameKey] : $this->aueId;
     }
 
     public function unsetCookies() {
