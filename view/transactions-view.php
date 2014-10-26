@@ -22,7 +22,7 @@ $this->getHtmlForEventEdit() . '
 <form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">
     <div class="well">
      Skapa ny överföring:' .
-    $this->getHtmlForCreateNewTransaction() . '
+    $this->getHtmlForCreateNewEvent() . '
     </div>
 </form>
 <div class="panel panel-info">
@@ -63,28 +63,6 @@ $this->getHtmlForEventEdit() . '
             ';
         }
         unset($transaction);
-
-        return $html;
-    }
-
-    private function getHtmlForCreateNewTransaction() {
-        $isAdmin = $this->model->isUserAdmin();
-        $html = '';
-
-        foreach ($this->model->getAdminUserEntities() as $aue) {
-            if ($isAdmin) {
-                $name = $aue->getUsersName();
-                $id = $aue->getId();
-            } else {
-                $name = $aue->getAdminsName();
-                $id = $aue->getId();
-            }
-            $html .= '
-                <button type="submit"
-                    class="btn btn-default"
-                    name="' . self::$postNewTransactionForAueIdButtonNameKey . '"
-                    value="' . $id . '">' . $name . '</button>';
-        }
 
         return $html;
     }

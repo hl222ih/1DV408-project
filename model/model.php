@@ -39,22 +39,26 @@ class Model {
     private $transactions;
 
     public function __construct() {
-        $this->dao = new Dao();
-        $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
-        if ($this->isUserLoggedIn()) {
-            if (!$this->isSessionIntegrityOk()) {
-                $this->logoutUser();
-            } else {
-                $this->unit = new Unit("krona", "kronor", "kr");
-                $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
-                $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
-                $this->setActiveAdminUserEntityId(0); //visa alla anslutna aue:s som default
+        try {
+            $this->dao = new Dao();
+            $this->user = new User($this->getLastPostedUsername(), 0, false, "", array());
+            if ($this->isUserLoggedIn()) {
+                if (!$this->isSessionIntegrityOk()) {
+                    $this->logoutUser();
+                } else {
+                    $this->unit = new Unit("krona", "kronor", "kr");
+                    $this->user = $this->dao->getUserByUsername($this->getLastPostedUsername());
+                    $this->adminUserEntities = $this->dao->getAdminUserEntitiesByUserId($this->user->getId());
+                    $this->setActiveAdminUserEntityId(0); //visa alla anslutna aue:s som default
 
-                //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
-                //TODO: borde bara hämta innehåll som är väsentligt för vyn
-                $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
-                $this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
+                    //$this->units = $this->dao->getUnitsByUsersIds($this->user->getId(), $this->user->getMappedUsersIds()); //behöver 1) mappedUserIds -> all units for them.
+                    //TODO: borde bara hämta innehåll som är väsentligt för vyn
+                    $this->tasks = $this->dao->getTasksByUserId($this->user->getId());
+                    $this->transactions = $this->dao->getTransactionsByUserId($this->user->getId());
+                }
             }
+        } catch (\Exception $e) {
+            throw new \Exception("Ooops! Tyvärr var det något som inte gick som det var tänkt. " . $e->getMessage(), MessageType::Error);
         }
     }
 
@@ -415,12 +419,7 @@ class Model {
         }
     }
 
-    //TODO: form for creating or updating a Task.
-    public function createTask() {
-        if ($this->isUserAdmin()) {
-            //$this->dao->createTask(...);
-        }
-    }
+    //TODO: updating a Task.
     public function updateTask() {
         if ($this->isAllowedToChangeTask($taskId, true)) {
             //$this->dao->updateTask($taskId,...);
@@ -490,7 +489,7 @@ class Model {
 
     public function connectAccounts($username, $secretToken) {
         if ($this->dao->connectAccounts($this->user->getId(), $this->isUserAdmin(), $username, $secretToken)) {
-            $this->setMessage("Ditt konto har nu kopplats ihop med" . $this->user->getName() . ".", MessageType::Success);
+            $this->setMessage("Kontona har nu kopplats ihop.", MessageType::Success);
         } else {
             $this->setMessage("Ihopkopplingen av kontona misslyckades.", MessageType::Error);
         }
@@ -502,9 +501,9 @@ class Model {
 
     public function createNewTransaction($adminUserIdentityId, $description, $value, $shouldChangeSign) {
         if ($value == 0) {
-            $this->setMessage("En överföring får inte har värdet 0", MessageType::Error);
+            $this->setMessage("En överföring får inte ha värdet 0.", MessageType::Error);
         } else if (!$this->doesAueIdBelongToUser($adminUserIdentityId)) {
-            $this->setMessage("Du saknar rättigheter att hantera överföringar", MessageType::Error);
+            $this->setMessage("Du saknar rättigheter att hantera överföringen", MessageType::Error);
         } else {
             if ($shouldChangeSign) {
                 $value = -$value;
@@ -540,5 +539,33 @@ class Model {
         }
         $isBelonging = ($aue != null);
         return $isBelonging;
+    }
+
+    public function createNewTask($adminUserEntityId, $title, $description, $rewardValue, $penaltyValue,
+                                  $validFrom, $validTo, $repeatNumberOfWeeks) {
+        $title = ($title) ? $title : "Uppgift";
+        $description = ($description) ? $description : "Uppgiften saknar beskrivning.";
+        $repeatNumberOfWeeks = ($repeatNumberOfWeeks >= 1) ? $repeatNumberOfWeeks : 1;
+        if (!$this->doesAueIdBelongToUser($adminUserEntityId) || !$this->isUserAdmin()) {
+            $this->setMessage("Du saknar rättigheter att skapa uppgiften.", MessageType::Error);
+        } else if ($rewardValue < 0) {
+            $this->setMessage("Belöningsvärdet från inte vara under 0.", MessageType::Error);
+        } else if ($penaltyValue > 0) {
+            $this->setMessage("Straffvärdet får inte vara över 0.", MessageType::Error);
+        } else if (strtotime($validFrom) < time()) {
+            $this->setMessage("Uppgifter får inte vara giltiga från och med bakåt i tiden.", MessageType::Error);
+        } else {
+            $numberOfSuccessfulRecordsCreated = $this->dao->insertNewTask($adminUserEntityId, $title, $description, $rewardValue, $penaltyValue,
+                strtotime($validFrom), strtotime($validTo), $repeatNumberOfWeeks);
+            if ($numberOfSuccessfulRecordsCreated) {
+                $this->setMessage( $numberOfSuccessfulRecordsCreated . " uppgifter har skapats.", MessageType::Success);
+            } else {
+                if ($repeatNumberOfWeeks > 1) {
+                    $this->setMessage("Uppgifterna kunde inte skapas.", MessageType::Error);
+                } else {
+                    $this->setMessage("Uppgiften kunde inte skapas.", MessageType::Error);
+                }
+            }
+        }
     }
 }

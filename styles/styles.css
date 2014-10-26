@@ -14,3 +14,16 @@
 button {
     margin: 2px;
 }
+
+#validFromId, #validToId {
+    font-family: Georgia, Helvetica, fantasy !important;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+
+.rd-container {
+    font-family: Georgia, Helvetica, sans-serif;
+}

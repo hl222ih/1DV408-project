@@ -28,7 +28,7 @@ class Dao {
                 $this->config->password
             );
         } catch (\PDOException $e) {
-            //TODO: error handling...
+            throw new \Exception("Kunde inte ansluta till databasen.");
         }
     }
     public function doesUserExist($username) {
@@ -468,5 +468,62 @@ class Dao {
         $isSuccess = $statement->execute();
 
         return $isSuccess;
+    }
+
+
+    public function insertNewTask($adminUserIdentityId, $title, $description, $rewardValue, $penaltyValue, $validFrom, $validTo, $repeatNumberOfWeeks) {
+        $tableTask = "task";
+        $fieldUserToUserId = "user_to_user_id";
+        $fieldTitle = "title";
+        $fieldDescription = "description";
+        $fieldUnitId = "unit_id";
+        $fieldRewardValue = "reward_value";
+        $fieldPenaltyValue = "penalty_value";
+        $fieldValidFrom = "valid_from";
+        $fieldValidTo = "valid_to";
+        $fieldIsConfirmed = "is_confirmed";
+        $fieldIsDenied = "is_denied";
+
+        $unitId = 1; //hard coded for now...
+        $isConfirmed = 0;
+        $isDenied = 0;
+
+        $secondsInAWeek = 7 * 24 * 60 * 60;
+        $countSuccess = 0;
+
+        for ($i = 0; $i < $repeatNumberOfWeeks; $i++) {
+
+            $validFromForMySql = date('Y-m-d H:i:s', $validFrom);
+            $validToForMySql = date('Y-m-d H:i:s', $validTo);
+
+            $statement = $this->connection->prepare("
+                            INSERT INTO $tableTask ($fieldUserToUserId, $fieldUnitId, $fieldIsConfirmed, $fieldIsDenied,
+                            $fieldRewardValue, $fieldPenaltyValue, $fieldTitle, $fieldDescription, $fieldValidFrom,
+                            $fieldValidTo)
+                            VALUES (:user_to_user_id, :unit_id, :is_confirmed, :is_denied, :reward_value,
+                            :penalty_value, :title, :description, :valid_from, :valid_to)
+                            ");
+            $statement->bindParam(':user_to_user_id', $adminUserIdentityId, PDO::PARAM_INT);
+            $statement->bindParam(':unit_id', $unitId, PDO::PARAM_INT);
+            $statement->bindParam(':is_confirmed', $isConfirmed, PDO::PARAM_BOOL);
+            $statement->bindParam(':is_denied', $isDenied, PDO::PARAM_BOOL);
+            $statement->bindParam(':reward_value', $rewardValue, PDO::PARAM_INT);
+            $statement->bindParam(':penalty_value', $penaltyValue, PDO::PARAM_INT);
+            $statement->bindParam(':title', $title, PDO::PARAM_STR);
+            $statement->bindParam(':description', $description, PDO::PARAM_STR);
+            $statement->bindParam(':valid_from', $validFromForMySql, PDO::PARAM_STR);
+            $statement->bindParam(':valid_to', $validToForMySql, PDO::PARAM_STR);
+
+            $isSuccess = $statement->execute();
+            if ($isSuccess) {
+                $countSuccess++;
+            }
+            var_dump($statement->errorInfo());
+            echo PHP_EOL;
+            $validFrom = $validFrom  + $secondsInAWeek;
+            $validTo = $validTo  + $secondsInAWeek;
+        }
+
+        return $countSuccess;
     }
 }

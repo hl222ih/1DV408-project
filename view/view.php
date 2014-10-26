@@ -166,7 +166,7 @@ abstract class View extends ViewKeys {
                     value="' . $event->getId() . '">Markera som ej utförd</button>' : '');
         } else if ($event->getClassName() == Transaction::getClassName()) {
             $html =
-                (($this->model->isUserAdmin()) ? '
+                (($this->model->isUserAdmin() && $event->getIsPending()) ? '
                 <button type="submit"
                 class="btn btn-success pull-right"
                 name="' . self::$postConfirmTransactionButtonNameKey . '"
@@ -240,7 +240,7 @@ abstract class View extends ViewKeys {
 
     protected function getHtmlForEventEdit() {
         $isEditTask = isset($_POST[self::$postEditTaskButtonNameKey]);
-        $isNewTask = isset($_POST[self::$postNewTaskButtonNameKey]);
+        $isNewTask = isset($_POST[self::$postNewTaskForAueIdButtonNameKey]);
         $isEditTransaction = isset($_POST[self::$postEditTransactionButtonNameKey]);
         $isNewTransaction = isset($_POST[self::$postNewTransactionForAueIdButtonNameKey]);
 
@@ -266,7 +266,11 @@ abstract class View extends ViewKeys {
             }
             $headingText = "Redigera befintlig uppgift";
         } else if ($isNewTask) {
-            $headingText = "Skapa ny uppgift";
+            //$taskId = $_POST[self::$postEditTaskButtonNameKey];
+            $aueId = $_POST[self::$postNewTaskForAueIdButtonNameKey];
+            $parentsName = $this->model->getParentsName($aueId);
+            $childsName = $this->model->getChildsName($aueId);
+            $headingText = "Skapa ny uppgift för " . $childsName;
         } else if ($isEditTransaction) {
             $transactionId = $_POST[self::$postEditTransactionButtonNameKey];
             $event = $this->model->getTransaction($transactionId);
@@ -285,8 +289,7 @@ abstract class View extends ViewKeys {
             } else {
                 $headingText = "Initiera överföring";
             }
-            $transactionId = $_POST[self::$postEditTransactionButtonNameKey];
-            //$event = $this->model->getTransaction($transactionId);
+            //$transactionId = $_POST[self::$postEditTransactionButtonNameKey];
             $aueId = $_POST[self::$postNewTransactionForAueIdButtonNameKey];
             $parentsName = $this->model->getParentsName($aueId);
             $childsName = $this->model->getChildsName($aueId);
@@ -312,7 +315,7 @@ abstract class View extends ViewKeys {
                     $html .= '
                     <button type="submit"
                         class="btn btn-success pull-right"
-                        name="' . self::$postNewTaskButtonNameKey . '"
+                        name="' . self::$postExecuteNewTaskForAueIdButtonNameKey . '"
                         value="' . $aueId . '">Skapa</button>';
 
                 } else if ($isEditTransaction) {
@@ -329,8 +332,11 @@ abstract class View extends ViewKeys {
                         value="' . $aueId . '">Skapa</button>';
                 }
                 $html .= '
-                    <button type="button"
-                        class="btn btn-warning pull-right">Avbryt</button>';
+                    <a href="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '">
+                        <button type="button"
+                            class="btn btn-warning pull-right">Avbryt
+                        </button>
+                    </a>';
                 if ($isNewTask || $isEditTask) {
                     $html .= '
                         <div class="form-group col-lg-6">
@@ -414,11 +420,73 @@ abstract class View extends ViewKeys {
                             required/>
                     </div>';
                 }
+
+                if ($isNewTask) {
+                    $html .= '
+                        <div style="clear: both"></div>
+                        <div class="form-group col-lg-3">
+                            <label for="validFromId">Giltig från:</label>
+                            <!--used for css, too-->
+                            <input id="validFromId"
+                                class="form-control"
+                                name="' . self::$postTaskFromTimeKey . '"
+                                required/>
+                        </div>
+                        <div class="form-group col-lg-3">
+                            <label for="validToId">Giltig till:</label>
+                            <!--used for css, too-->
+                            <input id="validToId"
+                                class="form-control"
+                                name="' . self::$postTaskToTimeKey . '"
+                                required/>
+                        </div>
+                        <div class="form-group col-lg-1">
+                            <label for="repeatWeeklyId">Repetera veckovis:</label>
+                            <input id="repeatWeeklyId"
+                                class="checkbox"
+                                type="checkbox"
+                                name="' . self::$postTaskRepeatWeeklyChecked . '" />
+                        </div>
+                        <div class="form-group col-lg-1">
+                            <label for="repeatNumberOfTimesId">Antal gånger:</label>
+                            <input id="repeatNumberOfTimesId"
+                                class="form-control"
+                                type="number"
+                                min=1
+                                name="' . self::$postTaskRepeatNumberOfTimes . '" />
+                        </div>';
+                }
                 $html .= '
                 </form>
             </div>
         </div>';
 
+        return $html;
+    }
+
+    protected function getHtmlForCreateNewEvent() {
+        $isAdmin = $this->model->isUserAdmin();
+        if (TransactionsView::getClassName() == get_class($this)) {
+            $buttonNameKey = self::$postNewTransactionForAueIdButtonNameKey;
+        } else if (TasksView::getClassName() == get_class($this)) {
+            $buttonNameKey = self::$postNewTaskForAueIdButtonNameKey;
+        }
+        $html = '';
+
+        foreach ($this->model->getAdminUserEntities() as $aue) {
+            if ($isAdmin) {
+                $name = $aue->getUsersName();
+                $id = $aue->getId();
+            } else { //user cannot create a task, but well initiate a transaction
+                $name = $aue->getAdminsName();
+                $id = $aue->getId();
+            }
+            $html .= '
+                <button type="submit"
+                    class="btn btn-default"
+                    name="' . $buttonNameKey . '"
+                    value="' . $id . '">' . $name . '</button>';
+        }
         return $html;
     }
 }

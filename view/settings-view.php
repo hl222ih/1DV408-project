@@ -20,6 +20,7 @@ class SettingsView extends View {
     </div>
     <div class="panel-body">
         <form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">
+            <span class="label label-info">Ditt användarnamn: ' . $this->model->getUsersUsername() . '</span>
             <span class="label label-info">Ditt token: ' . $this->model->getSecretToken() . '</span>
             <div class="form-group">
                 <label for="usernameId">Annat kontos användarnamn</label>

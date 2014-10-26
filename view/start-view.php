@@ -36,6 +36,7 @@ class StartView extends ViewKeys {
         $this->connectAccountName = (isset($_POST[self::$postConnectAccountUsernameKey]) ? $_POST[self::$postConnectAccountUsernameKey] : "");
         $this->connectAccountToken = (isset($_POST[self::$postConnectAccountTokenKey]) ? $_POST[self::$postConnectAccountTokenKey] : "");
         $this->aueId = isset($_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTransactionForAueIdButtonNameKey] : 0;
+        $this->aueId = isset($_POST[self::$postExecuteNewTaskForAueIdButtonNameKey]) ? $_POST[self::$postExecuteNewTaskForAueIdButtonNameKey] : 0;
     }
 
     public function unsetCookies() {
@@ -198,6 +199,40 @@ class StartView extends ViewKeys {
 
     public function getChangeValue() {
         return isset($_POST[self::$postChangeSignOnTransactionKey]) ? $_POST[self::$postChangeSignOnTransactionKey] : false;
+    }
+
+    public function wasExecuteNewTaskForAueIdButtonClicked() {
+        return isset($_POST[self::$postExecuteNewTaskForAueIdButtonNameKey]);
+    }
+
+    public function getTitle() {
+        return isset($_POST[self::$postEventTitleKey]) ? $_POST[self::$postEventTitleKey] : "";
+    }
+
+    public function getRewardValue() {
+        return isset($_POST[self::$postTaskRewardValueKey]) ? $_POST[self::$postTaskRewardValueKey] : 0;
+    }
+
+    public function getPenaltyValue() {
+        return isset($_POST[self::$postTaskPenaltyValueKey]) ? $_POST[self::$postTaskPenaltyValueKey] : 0;
+    }
+
+    public function getValidFrom() {
+        return isset($_POST[self::$postTaskFromTimeKey]) ? $_POST[self::$postTaskFromTimeKey] : 0;
+    }
+
+    public function getValidTo() {
+        return isset($_POST[self::$postTaskToTimeKey]) ? $_POST[self::$postTaskToTimeKey] : 0;
+    }
+
+    public function getRepeatNumberOfWeeks() {
+        $numberOfWeeks = 1;
+        $isRepeatChecked = isset($_POST[self::$postTaskRepeatWeeklyChecked]) ? $_POST[self::$postTaskRepeatWeeklyChecked] : false;
+        if ($isRepeatChecked) {
+            $numberOfWeeks = isset($_POST[self::$postTaskRepeatNumberOfTimes]) ? $_POST[self::$postTaskRepeatNumberOfTimes] : 1;
+            $numberOfWeeks = ($numberOfWeeks >= 1) ? $numberOfWeeks : 1;
+        }
+        return $numberOfWeeks;
     }
 }
 

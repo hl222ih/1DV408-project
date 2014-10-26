@@ -23,7 +23,7 @@ class ViewKeys {
     protected static $postMarkTaskDoneButtonNameKey = "View::MarkTaskDone";
 
     protected static $postUpdateTaskButtonNameKey = "View::UpdateTask";
-    protected static $postNewTaskButtonNameKey = "View::NewTask";
+//    protected static $postNewTaskButtonNameKey = "View::NewTask";
 
     protected static $postConfirmTransactionButtonNameKey = "View::ConfirmTransaction";
     protected static $postEditTransactionButtonNameKey = "View::EditTransaction";
@@ -32,6 +32,7 @@ class ViewKeys {
 
     protected static $postUpdateTransactionButtonNameKey = "View::UpdateTransaction";
     protected static $postNewTransactionForAueIdButtonNameKey = "View::NewTransactionForAueId";
+    protected static $postNewTaskForAueIdButtonNameKey = "View::NewTaskForAueId";
 
     protected static $postEventDescriptionKey = "View::EventDescription";
     protected static $postEventTitleKey = "View::EventTitle";
@@ -48,4 +49,10 @@ class ViewKeys {
     //protected static $postAdminUserEntityIdKey = "View::AdminUserEntityId";
 
     protected static $postExecuteNewTransactionForAueIdButtonNameKey = "View::ExecuteNewTransactionForAueId";
+    protected static $postExecuteNewTaskForAueIdButtonNameKey = "View::ExecuteNewTaskForAueId";
+
+    protected static $postTaskFromTimeKey = "View::TaskFromTime";
+    protected static $postTaskToTimeKey = "View::TaskToTime";
+    protected static $postTaskRepeatWeeklyChecked = "View::TaskRepeatWeeklyChecked";
+    protected static $postTaskRepeatNumberOfTimes = "View::TaskRepeatNumberOfTimes";
 }

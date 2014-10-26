@@ -13,6 +13,8 @@ class Footer {
         <footer class="well well-sm">
             Hannes Ljusås (hl222ih) - 1DV408 projekt - lnu.se
         </footer>
+        <script src="vendors/rome.min.js"></script>
+        <script src="scripts/script.js"></script>
         ';
     }
 }

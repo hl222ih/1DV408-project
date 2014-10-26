@@ -38,8 +38,13 @@ class Controller {
     static private $logoutViewName = "logout"; //not an actual view -> logged out and redirected to login
 
     public function __construct() {
-        $this->model = new Model();
-        $this->startView = new StartView($this->model);
+        try {
+            $this->model = new Model();
+            $this->startView = new StartView($this->model);
+        } catch (\Exception $e) {
+            echo $e->getMessage(); //well, if the model or view can't be loaded, maybe it's ok to display the error message
+                                   //from the controller to at least show to user something
+        }
     }
 
     /**
@@ -124,6 +129,18 @@ class Controller {
                     $this->startView->getDescription(),
                     $this->startView->getTransactionValue(),
                     $this->startView->getChangeValue()
+                );
+                $this->startView->redirectPage(); //reload to update changes
+            } else if ($this->startView->wasExecuteNewTaskForAueIdButtonClicked()) {
+                $this->model->createNewTask(
+                    $this->startView->getAdminUserEntityId(),
+                    $this->startView->getTitle(),
+                    $this->startView->getDescription(),
+                    $this->startView->getRewardValue(),
+                    $this->startView->getPenaltyValue(),
+                    $this->startView->getValidFrom(),
+                    $this->startView->getValidTo(),
+                    $this->startView->getRepeatNumberOfWeeks()
                 );
                 $this->startView->redirectPage(); //reload to update changes
             }

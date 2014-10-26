@@ -26,7 +26,14 @@ class TasksView extends View {
 
     function getHtml() {
         $html =
-$this->getHtmlForEventEdit() . '
+$this->getHtmlForEventEdit() .
+(($this->model->isUserAdmin()) ? '
+<form action="' . $_SERVER['PHP_SELF'].'?'.$_SERVER["QUERY_STRING"] . '" method="post">
+    <div class="well">
+     Skapa ny uppgift:' .
+$this->getHtmlForCreateNewEvent() . '
+    </div>
+</form> ' : '') . '
 <div class="panel panel-info">
     <div class="panel-heading">
         <div>
